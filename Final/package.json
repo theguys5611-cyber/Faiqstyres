@@ -1,0 +1,24 @@
+{
+  "name": "faiqs-tyres",
+  "version": "1.0.0",
+  "description": "Faiq's Tyres — AI-powered tyre shop (frontend + backend)",
+  "main": "server.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["tyres", "gemini", "firebase", "express"],
+  "author": "Faiq Ebrahim",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.13.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}

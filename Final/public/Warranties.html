@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faiq's Tyres | Warranties</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* ═══════════════════════════════
+           WARRANTY INTRO BANNER
+        ═══════════════════════════════ */
+        .warranty-intro {
+            background: var(--twt-dark);
+            color: white;
+            padding: 50px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .warranty-intro-text { max-width: 620px; }
+        .warranty-intro-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--twt-red);
+            margin-bottom: 12px;
+        }
+        .warranty-intro-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+        .warranty-intro-body {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.7;
+        }
+        .warranty-badge {
+            background: var(--twt-red);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .warranty-badge-num {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            line-height: 1;
+        }
+        .warranty-badge-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 6px;
+        }
+
+        /* ═══════════════════════════════
+           WARRANTY TIERS GRID
+        ═══════════════════════════════ */
+        .warranty-tiers {
+            max-width: 1300px;
+            margin: 50px auto 0;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .tier-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--twt-red);
+            padding: 35px 30px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .tier-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .tier-icon { font-size: 2.2rem; margin-bottom: 18px; }
+        .tier-name {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            color: var(--twt-dark);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .tier-duration {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--twt-red);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+        }
+        .tier-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 22px;
+        }
+        .tier-covers {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tier-covers li {
+            font-size: 0.82rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .tier-covers li::before {
+            content: '✓';
+            color: var(--twt-red);
+            font-weight: 900;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ═══════════════════════════════
+           CLAIM PROCESS SECTION
+        ═══════════════════════════════ */
+        .claim-section {
+            max-width: 1300px;
+            margin: 60px auto 0;
+            padding: 0 20px;
+        }
+        .section-header {
+            margin-bottom: 35px;
+        }
+        .section-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--twt-red);
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--twt-dark);
+            line-height: 1;
+        }
+        .steps-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0;
+            background: white;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .step {
+            padding: 35px 28px;
+            border-right: 1px solid var(--border);
+            position: relative;
+        }
+        .step:last-child { border-right: none; }
+        .step-num {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: #f0f0f0;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .step-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--twt-dark);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .step-body {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ═══════════════════════════════
+           EXCLUSIONS & FAQ
+        ═══════════════════════════════ */
+        .warranty-lower {
+            max-width: 1300px;
+            margin: 50px auto 0;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 30px;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .warranty-lower { grid-template-columns: 1fr; } }
+
+        .exclusions-card {
+            background: var(--twt-dark);
+            color: white;
+            padding: 35px 30px;
+        }
+        .exclusions-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        .exclusions-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .exclusions-list li {
+            font-size: 0.84rem;
+            color: rgba(255,255,255,0.65);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.5;
+        }
+        .exclusions-list li::before {
+            content: '✕';
+            color: var(--twt-red);
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .faq-card {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 35px 30px;
+            box-shadow: var(--shadow);
+        }
+        .faq-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            color: var(--twt-dark);
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 18px 0;
+        }
+        .faq-item:first-of-type { border-top: 1px solid var(--border); }
+        .faq-question {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--twt-dark);
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .faq-question::after {
+            content: '+';
+            font-size: 1.3rem;
+            color: var(--twt-red);
+            font-weight: 300;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .faq-item.open .faq-question::after { transform: rotate(45deg); }
+        .faq-answer {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            display: none;
+            padding-top: 6px;
+        }
+        .faq-item.open .faq-answer { display: block; }
+
+        /* ═══════════════════════════════
+           CTA STRIP
+        ═══════════════════════════════ */
+        .warranty-cta {
+            background: var(--twt-red);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            margin-top: 60px;
+        }
+        .warranty-cta-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+        .warranty-cta-body {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+        .warranty-cta-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-white {
+            background: white;
+            color: var(--twt-red);
+            padding: 14px 30px;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .btn-white:hover { background: #f0f0f0; }
+        .btn-ghost {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 14px 30px;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.15); }
+
+        /* ═══════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════ */
+        @media (max-width: 768px) {
+            .warranty-intro { flex-direction: column; }
+            .steps-row { grid-template-columns: 1fr 1fr; }
+            .step { border-bottom: 1px solid var(--border); }
+        }
+        @media (max-width: 480px) {
+            .steps-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <header>
+        <div class="top-utility">
+            <a href="Warranties.html" style="color: var(--twt-red);">Warranties</a>
+            <a href="Contactus.html">Contact Us</a>
+            <a href="Authorisation.html">My Account / Log In</a>
+        </div>
+        <nav>
+            <a href="Homepage.html" class="logo">FAIQ'S <span>TYRES</span></a>
+            <div class="nav-flag">🇿🇦 PREMIUM STOCK</div>
+        </nav>
+    </header>
+
+    <!-- ══════════ BREADCRUMB ══════════ -->
+    <div class="breadcrumbs">
+        <a href="Homepage.html">🏠 Home</a> / <span style="color:black;">Warranties</span>
+    </div>
+
+    <!-- ══════════ INTRO BANNER ══════════ -->
+    <div class="warranty-intro">
+        <div class="warranty-intro-text">
+            <div class="warranty-intro-eyebrow">Peace of Mind, Guaranteed</div>
+            <h1 class="warranty-intro-title">OUR WARRANTY<br>PROMISE</h1>
+            <p class="warranty-intro-body">
+                Every tyre sold at Faiq's Tyres comes backed by our comprehensive warranty programme.
+                We stand behind every product we stock and every fitment we perform — so you can drive
+                with total confidence on South African roads.
+            </p>
+        </div>
+        <div class="warranty-badge">
+            <div class="warranty-badge-num">5</div>
+            <div class="warranty-badge-label">Year Max<br>Coverage</div>
+        </div>
+    </div>
+
+    <!-- ══════════ WARRANTY TIER CARDS ══════════ -->
+    <div class="warranty-tiers">
+
+        <div class="tier-card">
+            <div class="tier-icon">🛡️</div>
+            <div class="tier-name">WORKMANSHIP WARRANTY</div>
+            <div class="tier-duration">12 Months from Fitment</div>
+            <p class="tier-desc">Covers any defect or fault arising from our fitment, balancing, or rotation service. If we made an error, we fix it — no charge.</p>
+            <ul class="tier-covers">
+                <li>Incorrect tyre mounting</li>
+                <li>Improper torque or valve installation</li>
+                <li>Balancing defects causing vibration</li>
+                <li>Damage caused during fitting</li>
+            </ul>
+        </div>
+
+        <div class="tier-card">
+            <div class="tier-icon">🏭</div>
+            <div class="tier-name">MANUFACTURER WARRANTY</div>
+            <div class="tier-duration">Up to 5 Years / Tread Life</div>
+            <p class="tier-desc">All tyres we stock are covered by the original manufacturer's warranty against material or production defects. Coverage period varies by brand.</p>
+            <ul class="tier-covers">
+                <li>Structural defects in sidewall or belt</li>
+                <li>Tread separation under normal use</li>
+                <li>Bead failure from manufacturing fault</li>
+                <li>Abnormal tread wear (with alignment records)</li>
+            </ul>
+        </div>
+
+        <div class="tier-card">
+            <div class="tier-icon">💥</div>
+            <div class="tier-name">ROAD HAZARD COVER</div>
+            <div class="tier-duration">12 Months from Purchase</div>
+            <p class="tier-desc">Available as an optional add-on at purchase. Protects against accidental damage from potholes, nails, glass, and other road hazards you can't avoid.</p>
+            <ul class="tier-covers">
+                <li>Pothole-induced impact damage</li>
+                <li>Punctures beyond repair</li>
+                <li>Sidewall cuts from debris</li>
+                <li>Partial replacement credit on qualifying tyres</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ══════════ HOW TO CLAIM ══════════ -->
+    <div class="claim-section">
+        <div class="section-header">
+            <div class="section-eyebrow">Simple & Hassle-Free</div>
+            <div class="section-title">HOW TO CLAIM</div>
+        </div>
+        <div class="steps-row">
+            <div class="step">
+                <div class="step-num">01</div>
+                <div class="step-title">CONTACT US</div>
+                <p class="step-body">Call, email, or visit our Rondebosch centre. Have your purchase receipt and vehicle details ready.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <div class="step-title">ASSESSMENT</div>
+                <p class="step-body">Our technician inspects the tyre to confirm the defect and determine whether it falls under workmanship, manufacturer, or road hazard cover.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">03</div>
+                <div class="step-title">APPROVAL</div>
+                <p class="step-body">Valid claims are approved on the spot or escalated to the manufacturer within 2 business days. You'll be kept updated throughout.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">04</div>
+                <div class="step-title">RESOLUTION</div>
+                <p class="step-body">Depending on the outcome, we'll repair, replace, or issue a pro-rated credit — whichever best resolves your situation.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ EXCLUSIONS + FAQ ══════════ -->
+    <div class="warranty-lower">
+
+        <div class="exclusions-card">
+            <div class="exclusions-title">WHAT'S NOT COVERED</div>
+            <ul class="exclusions-list">
+                <li>Damage from incorrect tyre pressure or neglected inflation</li>
+                <li>Wear caused by misaligned wheels or faulty suspension components</li>
+                <li>Damage from racing, off-road abuse, or overloading beyond rated capacity</li>
+                <li>Tyres fitted by a third-party service provider (not Faiq's Tyres)</li>
+                <li>Cosmetic damage such as scuffs or discolouration not affecting performance</li>
+                <li>Damage resulting from a vehicle accident or collision</li>
+                <li>Tyres that have exceeded their tread wear indicator</li>
+            </ul>
+        </div>
+
+        <div class="faq-card">
+            <div class="faq-title">COMMON QUESTIONS</div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Do I need my original receipt to claim?</div>
+                <div class="faq-answer">Yes, proof of purchase is required for all warranty claims. If you created an account with us, your purchase history is saved and can be used in lieu of a paper receipt.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">How long does the claims process take?</div>
+                <div class="faq-answer">Workmanship claims are typically resolved same-day. Manufacturer defect claims that require the brand's involvement may take 2–5 business days. We'll communicate every step of the way.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Can I claim if I moved to another city?</div>
+                <div class="faq-answer">Yes. Contact us remotely and we'll guide you through the process. For manufacturer defects, we can often arrange assessment through an authorised dealer near you.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Is road hazard cover automatic?</div>
+                <div class="faq-answer">Road hazard cover is an optional add-on, not included by default. It must be elected at the time of purchase. Check your invoice or account purchase history to confirm if you opted in.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">What happens if my tyre is only partially worn?</div>
+                <div class="faq-answer">For valid claims on partially-worn tyres, we offer a pro-rated replacement credit based on the remaining tread depth relative to the original tread. This credit is applied toward a replacement tyre.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ CTA STRIP ══════════ -->
+    <div class="warranty-cta">
+        <div class="warranty-cta-title">READY TO SHOP WITH CONFIDENCE?</div>
+        <p class="warranty-cta-body">Every purchase at Faiq's Tyres is backed by our warranty promise. Browse our full inventory or book a fitment today.</p>
+        <div class="warranty-cta-actions">
+            <a href="Store.html" class="btn-white">Browse Tyres</a>
+            <a href="Fitment.html" class="btn-ghost">Book a Fitment</a>
+            <a href="Contactus.html" class="btn-ghost">Contact Us</a>
+        </div>
+    </div>
+
+</div><!-- /#app -->
+
+<script>
+    function toggleFaq(el) {
+        const item = el.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        // Close all others
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+    }
+</script>
+
+</body>
+</html>

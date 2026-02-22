@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faiq's Tyres | Contact Us</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* ═══════════════════════════════
+           CONTACT HERO
+        ═══════════════════════════════ */
+        .contact-hero {
+            background: var(--twt-dark);
+            color: white;
+            padding: 50px 5%;
+        }
+        .contact-hero-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--twt-red);
+            margin-bottom: 12px;
+        }
+        .contact-hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1;
+            margin-bottom: 14px;
+        }
+        .contact-hero-body {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.6);
+            max-width: 560px;
+            line-height: 1.7;
+        }
+
+        /* ═══════════════════════════════
+           QUICK-CONTACT STRIP
+        ═══════════════════════════════ */
+        .contact-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            background: var(--twt-red);
+            color: white;
+        }
+        .contact-strip-tile {
+            padding: 28px 30px;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: background 0.2s;
+        }
+        .contact-strip-tile:last-child { border-right: none; }
+        .contact-strip-tile:hover { background: rgba(0,0,0,0.15); }
+        .contact-strip-icon { font-size: 1.8rem; margin-bottom: 10px; }
+        .contact-strip-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.75;
+            margin-bottom: 5px;
+        }
+        .contact-strip-val {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* ═══════════════════════════════
+           MAIN CONTACT LAYOUT
+        ═══════════════════════════════ */
+        .contact-layout {
+            max-width: 1300px;
+            margin: 50px auto 0;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 30px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .contact-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ═══════════════════════════════
+           INFO PANEL (left)
+        ═══════════════════════════════ */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        .info-block {
+            background: white;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--twt-red);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+        .info-block-title {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--twt-dark);
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .info-row-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+        .info-row-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+        .info-row-val {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--twt-dark);
+            line-height: 1.5;
+        }
+        .info-row-val a {
+            color: var(--twt-red);
+            text-decoration: none;
+        }
+        .info-row-val a:hover { text-decoration: underline; }
+        .info-row-val span {
+            display: block;
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        /* Hours table */
+        .hours-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .hours-table tr td {
+            font-size: 0.84rem;
+            padding: 6px 0;
+            border-bottom: 1px solid #f5f5f5;
+            color: var(--text-main);
+        }
+        .hours-table tr:last-child td { border-bottom: none; }
+        .hours-table td:last-child {
+            text-align: right;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .hours-closed { color: var(--twt-red) !important; font-weight: 700; }
+
+        /* Social links */
+        .social-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .social-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            color: var(--twt-dark);
+            transition: 0.2s;
+        }
+        .social-btn:hover { border-color: var(--twt-red); color: var(--twt-red); }
+
+        /* ═══════════════════════════════
+           CONTACT FORM (right)
+        ═══════════════════════════════ */
+        .contact-form-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--twt-red);
+            padding: 40px 35px;
+            box-shadow: var(--shadow);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+        .form-textarea {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 120px;
+            border-radius: 0;
+        }
+        .form-textarea:focus { outline: none; border-color: var(--twt-red); }
+
+        .topic-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .topic-chip {
+            padding: 7px 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 0;
+        }
+        .topic-chip:hover,
+        .topic-chip.active { background: var(--twt-dark); color: white; border-color: var(--twt-dark); }
+
+        .form-error {
+            display: none;
+            padding: 12px 15px;
+            background: #fff5f5;
+            border-left: 4px solid var(--twt-red);
+            font-size: 0.82rem;
+            color: #b00;
+            margin-bottom: 16px;
+        }
+        .form-error.show { display: block; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--twt-red);
+            color: white;
+            border: none;
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover:not(:disabled) { background: #b3050f; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .form-success {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .form-success.show { display: block; }
+        .form-success-icon { font-size: 3rem; margin-bottom: 16px; }
+        .form-success-title {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            color: var(--twt-dark);
+            margin-bottom: 12px;
+        }
+        .form-success-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* ═══════════════════════════════
+           MAP EMBED
+        ═══════════════════════════════ */
+        .map-embed-section {
+            max-width: 1300px;
+            margin: 50px auto 0;
+            padding: 0 20px;
+        }
+        .map-embed-section iframe {
+            width: 100%;
+            height: 340px;
+            border: none;
+            display: block;
+            border: 1px solid var(--border);
+        }
+
+        /* ═══════════════════════════════
+           BOTTOM NAV CTA
+        ═══════════════════════════════ */
+        .contact-cta {
+            background: var(--twt-dark);
+            color: white;
+            text-align: center;
+            padding: 55px 20px;
+            margin-top: 60px;
+        }
+        .contact-cta-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .contact-cta-body {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+        .contact-cta-actions {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <header>
+        <div class="top-utility">
+            <a href="Warranties.html">Warranties</a>
+            <a href="Contactus.html" style="color: var(--twt-red);">Contact Us</a>
+            <a href="Authorisation.html">My Account / Log In</a>
+        </div>
+        <nav>
+            <a href="Homepage.html" class="logo">FAIQ'S <span>TYRES</span></a>
+            <div class="nav-flag">🇿🇦 PREMIUM STOCK</div>
+        </nav>
+    </header>
+
+    <!-- ══════════ BREADCRUMB ══════════ -->
+    <div class="breadcrumbs">
+        <a href="Homepage.html">🏠 Home</a> / <span style="color:black;">Contact Us</span>
+    </div>
+
+    <!-- ══════════ HERO ══════════ -->
+    <section class="contact-hero">
+        <div class="contact-hero-eyebrow">We're here to help</div>
+        <h1 class="contact-hero-title">GET IN TOUCH</h1>
+        <p class="contact-hero-body">
+            Whether you have a question about a specific tyre, need help with a warranty claim,
+            or want to book a fitment — our team in Rondebosch is ready to assist.
+        </p>
+    </section>
+
+    <!-- ══════════ QUICK-CONTACT STRIP ══════════ -->
+    <div class="contact-strip">
+        <a href="tel:+27210000000" class="contact-strip-tile">
+            <div class="contact-strip-icon">📞</div>
+            <div class="contact-strip-label">Call Us</div>
+            <div class="contact-strip-val">+27 21 705 8351</div>
+        </a>
+        <a href="/cdn-cgi/l/email-protection#d3babdb5bc93b5b2baa2a0a7aaa1b6a0fdb0bcfda9b2" class="contact-strip-tile">
+            <div class="contact-strip-icon">✉️</div>
+            <div class="contact-strip-label">Email Us</div>
+            <div class="contact-strip-val"><span class="__cf_email__" data-cfemail="157c7b737a5573747c6466616c6770663b767a3b6f74"><span class="__cf_email__" data-cfemail="4b3f39243e29272e0b2c262a222765282426">[email&#160;protected]</span></span></div>
+        </a>
+        <a href="https://wa.me/27820000000" target="_blank" class="contact-strip-tile">
+            <div class="contact-strip-icon">💬</div>
+            <div class="contact-strip-label">WhatsApp</div>
+            <div class="contact-strip-val">+27 66 168 3535</div>
+        </a>
+        <a href="Fitment.html" class="contact-strip-tile">
+            <div class="contact-strip-icon">📅</div>
+            <div class="contact-strip-label">Book Online</div>
+            <div class="contact-strip-val">Fitment Centre</div>
+        </a>
+    </div>
+
+    <!-- ══════════ MAIN LAYOUT ══════════ -->
+    <div class="contact-layout">
+
+        <!-- LEFT: Info panel -->
+        <div class="info-panel">
+
+            <!-- Location & Contact Details -->
+            <div class="info-block">
+                <div class="info-block-title">STORE DETAILS</div>
+
+                <div class="info-row">
+                    <div class="info-row-icon">📍</div>
+                    <div>
+                        <div class="info-row-label">Address</div>
+                        <div class="info-row-val">Rondebosch <span>Cape Town, Western Cape, 7700</span></div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-row-icon">📞</div>
+                    <div>
+                        <div class="info-row-label">Phone</div>
+                        <div class="info-row-val"><a href="tel:+2721 705 8351">+27 21 705 8351</a></div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-row-icon">✉️</div>
+                    <div>
+                        <div class="info-row-label">Email</div>
+                        <div class="info-row-val"><a href="/cdn-cgi/l/email-protection#e68f888089a680878f9795929f948395c88589c89c87"><span class="__cf_email__" data-cfemail="6d04030b022d0b0c041c1e19141f081e430e0243170c"><span class="__cf_email__" data-cfemail="0b5f79647e69676e4b6c666a626725686466">[email&#160;protected]</span></span></a></div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-row-icon">💬</div>
+                    <div>
+                        <div class="info-row-label">WhatsApp</div>
+                        <div class="info-row-val"><a href="https://wa.me/27820000000" target="_blank">+27 66 168 3535</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trading Hours -->
+            <div class="info-block">
+                <div class="info-block-title">TRADING HOURS</div>
+                <table class="hours-table">
+                    <tr><td>Monday</td><td>08:00 – 17:00</td></tr>
+                    <tr><td>Tuesday</td><td>08:00 – 17:00</td></tr>
+                    <tr><td>Wednesday</td><td>08:00 – 17:00</td></tr>
+                    <tr><td>Thursday</td><td>08:00 – 17:00</td></tr>
+                    <tr><td>Friday</td><td>08:00 – 17:00</td></tr>
+                    <tr><td>Saturday</td><td>08:00 – 13:00</td></tr>
+                    <tr><td>Sunday</td><td class="hours-closed">Closed</td></tr>
+                    <tr><td>Public Holidays</td><td class="hours-closed">Closed</td></tr>
+                </table>
+            </div>
+
+            <!-- Social & Quick Links -->
+            <div class="info-block">
+                <div class="info-block-title">FOLLOW US</div>
+                <div class="social-row">
+                    <a href="https://www.facebook.com" class="social-btn">📘 Facebook</a>
+                    <a href="https://www.instagram.com" class="social-btn">📸 Instagram</a>
+                    <a href="https://x.com/i/flow/login" class="social-btn">🐦 Twitter / X</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Contact form -->
+        <div class="contact-form-card">
+
+            <span class="card-label">Send Us a Message</span>
+            <div class="card-title">WE'LL GET BACK TO YOU</div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">
+                Fill in the form below and we'll respond within one business day. For urgent queries, call or WhatsApp us directly.
+            </p>
+
+            <div id="contact-form">
+
+                <!-- Topic chips -->
+                <div class="form-group">
+                    <label class="form-label">Topic</label>
+                    <div class="topic-chips" id="topic-chips">
+                        <button type="button" class="topic-chip active" onclick="selectTopic(this)">General Enquiry</button>
+                        <button type="button" class="topic-chip" onclick="selectTopic(this)">Tyre Advice</button>
+                        <button type="button" class="topic-chip" onclick="selectTopic(this)">Warranty Claim</button>
+                        <button type="button" class="topic-chip" onclick="selectTopic(this)">Book a Fitment</button>
+                        <button type="button" class="topic-chip" onclick="selectTopic(this)">Pricing / Quote</button>
+                        <button type="button" class="topic-chip" onclick="selectTopic(this)">Other</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input class="form-input" id="c-first" type="text" placeholder="John">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input class="form-input" id="c-last" type="text" placeholder="Smith">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input class="form-input" id="c-phone" type="tel" placeholder="+27 82 000 0000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input class="form-input" id="c-email" type="email" placeholder="john@example.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Vehicle (optional)</label>
+                    <input class="form-input" id="c-vehicle" type="text" placeholder="e.g. 2020 Toyota Fortuner">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-textarea" id="c-message" placeholder="How can we help you?"></textarea>
+                </div>
+
+                <div class="form-error" id="form-error"></div>
+
+                <button class="btn-submit" id="submit-btn" onclick="submitContact()">SEND MESSAGE</button>
+
+            </div><!-- /#contact-form -->
+
+            <!-- Success state -->
+            <div class="form-success" id="form-success">
+                <div class="form-success-icon">✅</div>
+                <div class="form-success-title">MESSAGE SENT</div>
+                <div class="form-success-body">
+                    Thanks, <strong id="success-name"></strong>! We've received your message and will
+                    be in touch within one business day.<br><br>
+                    For urgent queries, reach us on <a href="tel:+27210000000" style="color:var(--twt-red);">+27 21 000 0000</a>.
+                </div>
+            </div>
+
+        </div><!-- /.contact-form-card -->
+
+    </div><!-- /.contact-layout -->
+
+    <!-- ══════════ MAP EMBED ══════════ -->
+    <div class="map-embed-section">
+        
+        <iframe
+            src="https://maps.google.com/maps?q=AIzaSyD3p79WPJ7NbJPrmu7Vi2mI5nFbkpAfPFARondebosch%2C%20Cape%20Town%2C%207700&output=embed"
+            allowfullscreen
+            loading="lazy"
+            title="Faiq's Tyres Location — Rondebosch, Cape Town">
+        </iframe>
+    </div>
+
+    <!-- ══════════ BOTTOM CTA ══════════ -->
+    <div class="contact-cta">
+        <div class="contact-cta-title">WHILE YOU'RE HERE</div>
+        <p class="contact-cta-body">Browse our full tyre inventory, check our warranty coverage, or book your fitment slot online.</p>
+        <div class="contact-cta-actions">
+            <a href="Store.html" class="btn-action btn-red">Shop Tyres</a>
+            <a href="Fitment.html" class="btn-action btn-dark">Book Fitment</a>
+            <a href="Warranties.html" class="btn-action btn-dark">View Warranties</a>
+        </div>
+    </div>
+
+</div><!-- /#app -->
+
+</div><!-- /#app -->
+
+<!-- EmailJS SDK -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+    
+        const EMAILJS_SERVICE_ID  = 'service_9z59dco';   
+        const EMAILJS_TEMPLATE_ID = 'template_1y2qfcd';  
+        const EMAILJS_PUBLIC_KEY  = 'pGu62eOpt7vGgSEdh'; 
+
+    function selectTopic(el) {
+        document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function getActiveTopic() {
+        const active = document.querySelector('.topic-chip.active');
+        return active ? active.textContent.trim() : 'General Enquiry';
+    }
+
+    async function submitContact() {
+        document.getElementById('form-error').classList.remove('show');
+
+        const fields = {
+            topic    : getActiveTopic(),
+            firstName: document.getElementById('c-first').value.trim(),
+            lastName : document.getElementById('c-last').value.trim(),
+            phone    : document.getElementById('c-phone').value.trim(),
+            email    : document.getElementById('c-email').value.trim(),
+            vehicle  : document.getElementById('c-vehicle').value.trim(),
+            message  : document.getElementById('c-message').value.trim()
+        };
+
+        if (!fields.firstName || !fields.lastName) { showError('Please enter your first and last name.'); return; }
+        if (!fields.email || !fields.email.includes('@')) { showError('Please enter a valid email address.'); return; }
+        if (!fields.message) { showError('Please write a message before submitting.'); return; }
+
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.textContent = 'SENDING...';
+
+        try {
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                topic      : fields.topic,
+                from_name  : fields.firstName + ' ' + fields.lastName,
+                from_email : fields.email,
+                phone      : fields.phone   || 'Not provided',
+                vehicle    : fields.vehicle || 'Not provided',
+                message    : fields.message
+            }, EMAILJS_PUBLIC_KEY);
+
+            document.getElementById('contact-form').style.display = 'none';
+            document.getElementById('success-name').textContent = fields.firstName;
+            document.getElementById('form-success').classList.add('show');
+        } catch (err) {
+            showError('Could not send your message. Please call us on +27 21 000 0000 or try again.');
+            console.error('EmailJS error:', err);
+            btn.disabled = false;
+            btn.textContent = 'SEND MESSA

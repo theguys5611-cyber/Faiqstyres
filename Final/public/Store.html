@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faiq's Tyres | Premium Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Wishlist button on cards ── */
+        .wishlist-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.4rem;
+            line-height: 1;
+            padding: 4px;
+            transition: transform 0.15s;
+            z-index: 2;
+        }
+        .wishlist-btn:hover { transform: scale(1.25); }
+        .tire-card { position: relative; }
+
+        /* ── Wishlist panel modal ── */
+        .wishlist-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 4000;
+            display: flex; align-items: flex-start; justify-content: flex-end;
+        }
+        .wishlist-panel {
+            background: #fff;
+            width: min(420px, 95vw);
+            height: 100vh;
+            overflow-y: auto;
+            padding: 28px 24px;
+            box-shadow: -6px 0 32px rgba(0,0,0,0.18);
+        }
+        .wishlist-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .wishlist-panel-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem; letter-spacing: 1px;
+        }
+        .wishlist-close {
+            background: none; border: none; font-size: 1.6rem;
+            cursor: pointer; line-height: 1; color: #555;
+        }
+        .wishlist-item {
+            display: flex; gap: 14px; align-items: flex-start;
+            border-bottom: 1px solid #eee; padding: 14px 0;
+        }
+        .wishlist-item-info { flex: 1; }
+        .wishlist-item-name { font-weight: 700; font-size: 0.95rem; }
+        .wishlist-item-size { font-size: 0.8rem; color: #666; margin: 2px 0 6px; }
+        .wishlist-item-price { font-weight: 700; color: #c0392b; font-size: 0.9rem; }
+        .wishlist-item-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .wishlist-item-actions button {
+            font-size: 0.75rem; font-weight: 700; padding: 5px 10px;
+            border: none; cursor: pointer; border-radius: 3px;
+        }
+        .btn-wl-cart { background: #1a1a1a; color: #fff; }
+        .btn-wl-remove { background: #f5f5f5; color: #c0392b; border: 1px solid #ddd !important; }
+        .wishlist-empty { text-align: center; padding: 48px 0; color: #aaa; font-size: 0.95rem; }
+        .wishlist-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+        .wishlist-login-note {
+            background: #fff8f0; border: 1px solid #f5cba7;
+            border-radius: 6px; padding: 12px 16px;
+            font-size: 0.82rem; color: #7d6248; margin-bottom: 16px;
+        }
+        .wishlist-login-note a { color: #c0392b; font-weight: 700; }
+
+        /* ── Tyre card image ── */
+        .tire-img-wrap {
+            width: 100%;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f7f7f7;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .tire-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .tire-card:hover .tire-img {
+            transform: scale(1.05);
+        }
+        .tire-img-placeholder {
+            font-size: 4rem;
+            opacity: 0.25;
+        }
+        /* Wishlist panel image thumbnail */
+        .wishlist-item-img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #f0f0f0;
+            flex-shrink: 0;
+        }
+        .wishlist-item-img-placeholder {
+            width: 64px;
+            height: 64px;
+            border-radius: 4px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Nav wishlist icon ── */
+        .nav-wishlist-btn {
+            font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
+            color: var(--twt-dark); text-decoration: none; letter-spacing: 0.5px;
+            background: none; border: none; cursor: pointer;
+        }
+        .wl-count {
+            display: inline-block; background: #c0392b; color: #fff;
+            border-radius: 50%; font-size: 0.6rem; font-weight: 900;
+            width: 16px; height: 16px; line-height: 16px;
+            text-align: center; margin-left: 3px; vertical-align: top;
+        }
+
+        /* ── Image Search Tab ── */
+        .img-drop-zone {
+            border: 2.5px dashed #ddd;
+            border-radius: 10px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: #fafafa;
+            position: relative;
+        }
+        .img-drop-zone:hover { border-color: #c0392b; background: #fff5f5; }
+        .img-drop-zone.drag-over { border-color: #c0392b; background: #fff0f0; }
+        .img-drop-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0;
+            cursor: pointer; width: 100%; height: 100%;
+        }
+        .img-drop-icon { font-size: 3rem; margin-bottom: 10px; }
+        .img-drop-label { font-weight: 700; font-size: 0.95rem; color: #333; }
+        .img-drop-sub { font-size: 0.8rem; color: #aaa; margin-top: 4px; }
+
+        .img-preview-row {
+            display: flex; gap: 16px; align-items: flex-start;
+            margin-top: 14px; padding: 14px;
+            background: #f4f4f4; border-radius: 8px;
+        }
+        .img-preview {
+            width: 120px; height: 120px; object-fit: cover;
+            border-radius: 6px; border: 2px solid #ddd; flex-shrink: 0;
+        }
+        .img-preview-meta { flex: 1; text-align: left; }
+        .img-preview-name { font-weight: 700; font-size: 0.88rem; color: #222; word-break: break-all; }
+        .img-preview-size { font-size: 0.78rem; color: #888; margin: 3px 0 10px; }
+        .img-analysed-label {
+            background: #fff3cd; border: 1px solid #ffc107;
+            border-radius: 5px; padding: 8px 12px;
+            font-size: 0.8rem; color: #7d5a00; margin-top: 12px;
+            font-style: italic;
+        }
+        .img-analysed-label strong { font-style: normal; color: #333; }
+
+        .img-matches-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem; letter-spacing: 1px;
+            margin: 20px 0 10px; color: #1a1a1a;
+        }
+        .img-match-badge {
+            position: absolute; top: 10px; left: 10px;
+            background: #c0392b; color: #fff;
+            font-size: 0.65rem; font-weight: 900;
+            padding: 3px 8px; border-radius: 3px; letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <header>
+        <div class="top-utility">
+            <a href="Warranties.html">Warranties</a>
+            <a href="Contactus.html">Contact Us</a>
+            <a href="Authorisation.html">My Account / Log In</a>
+        </div>
+        <nav>
+            <a href="Homepage.html" class="logo">FAIQ'S <span>TYRES</span></a>
+            <div class="search-container-header">
+                <input v-model="searchQuery" placeholder="Search by brand, size or keyword..." @keyup.enter="runAISearch">
+                <button @click="runAISearch">🔍</button>
+            </div>
+            <div class="nav-flag">🇿🇦 PREMIUM STOCK</div>
+            
+            <button class="nav-wishlist-btn" @click="wishlistOpen = true">
+                ♡ Wishlist
+                <span v-if="wishlist.length > 0" class="wl-count">{{ wishlist.length }}</span>
+            </button>
+            <a href="Checkout.html" style="font-size:0.78rem;font-weight:800;text-transform:uppercase;color:var(--twt-dark);text-decoration:none;letter-spacing:0.5px;">🛒 Cart</a>
+        </nav>
+    </header>
+
+    <div class="breadcrumbs">
+        <a href="Homepage.html">🏠 Home</a> / Shop / <span style="color:black">All Inventory</span>
+    </div>
+
+    <section class="store-hero">
+        <h1 class="store-title">FIND YOUR PERFECT MATCH</h1>
+        <div class="action-bar">
+            
+            <a href="Fitment.html" class="btn-action btn-red">Find Fitment Centre</a>
+        </div>
+    </section>
+
+    <main class="results-container">
+        <div class="search-panel-ui">
+            <div class="search-tabs">
+                <button class="search-tab" :class="{active: activeTab === 'prompt'}" @click="activeTab = 'prompt'">Recommendation</button>
+                <button class="search-tab" :class="{active: activeTab === 'car'}" @click="activeTab = 'car'">Find by Make</button>
+                <button class="search-tab" :class="{active: activeTab === 'image'}" @click="activeTab = 'image'">📷 Search by Photo</button>
+            </div>
+
+            <div v-if="activeTab === 'prompt'">
+                <p class="search-prompt-label">What are you looking for?</p>
+                <div class="search-prompt-row">
+                    <input v-model="searchQuery" class="search-prompt-input" placeholder="e.g. Budget 16 inch tires for daily city driving...">
+                    <button @click="runAISearch" class="btn-action btn-red" :disabled="isSearching">{{ isSearching ? 'Analysing...' : 'Search' }}</button>
+                </div>
+            </div>
+
+            <div v-else class="car-form">
+                <div class="input-wrap">
+                    <label>Make</label>
+                    <select v-model="carMake" @change="updateModels" class="form-select">
+                        <option value="" disabled>Select Make</option>
+                        <option v-for="make in Object.keys(carDatabase)" :key="make" :value="make">{{ make }}</option>
+                    </select>
+                </div>
+                <div class="input-wrap">
+                    <label>Model</label>
+                    <select v-model="carModel" :disabled="!carMake" class="form-select">
+                        <option value="" disabled>Select Model</option>
+                        <option v-for="model in availableModels" :key="model" :value="model">{{ model }}</option>
+                    </select>
+                </div>
+                <div class="input-wrap">
+                    <label>Year</label>
+                    <select v-model="carYear" class="form-select">
+                        <option value="" disabled>Year</option>
+                        <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+                    </select>
+                </div>
+                <button @click="runCarSearch" class="btn-action btn-red" style="align-self: flex-end;" :disabled="isCarSearching || !carMake || !carModel || !carYear">Find Tyres</button>
+            </div>
+
+            <!-- ── Image Search Panel ── -->
+            <div v-if="activeTab === 'image'">
+                <p class="search-prompt-label">Upload a photo of any tyre — we'll find the closest matches in our stock.</p>
+
+                <!-- Drop zone (hidden if image already selected) -->
+                <div v-if="!imgPreviewUrl"
+                     class="img-drop-zone"
+                     :class="{ 'drag-over': imgDragging }"
+                     @dragover.prevent="imgDragging = true"
+                     @dragleave="imgDragging = false"
+                     @drop.prevent="onImgDrop">
+                    <input type="file" accept="image/*" @change="onImgSelect">
+                    <div class="img-drop-icon">📷</div>
+                    <div class="img-drop-label">Drop a tyre photo here, or click to browse</div>
+                    <div class="img-drop-sub">JPG, PNG, WEBP — your photo stays private</div>
+                </div>
+
+                <!-- Preview + analyse button -->
+                <div v-if="imgPreviewUrl" class="img-preview-row">
+                    <img :src="imgPreviewUrl" class="img-preview" alt="Uploaded tyre">
+                    <div class="img-preview-meta">
+                        <div class="img-preview-name">{{ imgFileName }}</div>
+                        <div class="img-preview-size">{{ imgFileSize }}</div>
+                        <button class="btn-action btn-red"
+                                @click="runImageSearch"
+                                :disabled="isImageSearching"
+                                style="margin-top: 10px;">
+                            {{ isImageSearching ? '🔍 Analysing...' : '🔍 Find Matching Tyres' }}
+                        </button>
+                        <button @click="clearImageSearch"
+                                style="margin-top:8px;display:block;background:none;border:none;color:#999;font-size:0.8rem;cursor:pointer;text-decoration:underline;">
+                            × Clear photo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- What Gemini saw -->
+                <div v-if="imgAnalysedText" class="img-analysed-label">
+                    <strong>🤖 AI identified:</strong> {{ imgAnalysedText }}
+                </div>
+
+                <!-- Image match results -->
+                <div v-if="imgMatches.length > 0">
+                    <div class="img-matches-label">BEST MATCHES FOR YOUR PHOTO</div>
+                    <div class="tire-grid" style="margin-top: 0;">
+                        <div v-for="(tire, index) in imgMatches" :key="tire.id" class="tire-card" style="position:relative;">
+                            <div class="img-match-badge">Match #{{ index + 1 }}</div>
+                            <button class="wishlist-btn"
+                                    @click="toggleWishlist(tire)"
+                                    :title="isWishlisted(tire.id) ? 'Remove from Wishlist' : 'Add to Wishlist'">
+                                {{ isWishlisted(tire.id) ? '❤️' : '🤍' }}
+                            </button>
+                            <div class="tire-img-wrap">
+                                <img v-if="getTireImage(tire)" :src="getTireImage(tire)" :alt="tire.name" class="tire-img">
+                                <div v-else class="tire-img-placeholder">🛞</div>
+                            </div>
+                            <div class="tire-brand">{{ tire.name }}</div>
+                            <span class="tire-size">{{ tire.size }}</span>
+                            <p class="tire-desc">{{ tire.matchReason }}</p>
+                            <div class="tire-price">R{{ tire.price }}</div>
+                            <button class="btn-action btn-red tire-select-btn" @click="addToCart(tire)">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No matches -->
+                <div v-if="imgSearchDone && imgMatches.length === 0" class="no-results" style="margin-top:16px;">
+                    <div class="no-results-icon">📷</div>
+                    <h3 class="no-results-title">Couldn't Match This Image</h3>
+                    <p class="no-results-body">Try a clearer photo showing the tyre sidewall, or use the text search above.</p>
+                </div>
+            </div>
+
+            <div v-if="carResult" class="car-result-bar">                <span><strong>Matched Car:</strong> {{ carResult.year }} {{ carResult.make }} {{ carResult.model }}</span>
+                <span class="car-result-oe">OE: {{ carResult.oeSize }}</span>
+                <span v-if="rankedTires.length === 0" class="car-result-none">⚠ This size is not currently in stock.</span>
+                <span v-else class="car-result-ok">✓ We have compatible stock</span>
+            </div>
+        </div>
+
+        <div v-if="searchError" class="search-error">
+            ⚠ {{ searchError }}
+        </div>
+
+        <div v-if="searchMode" class="search-result-bar">
+            <div>
+                <span v-if="rankedTires.length > 0" class="search-result-label">
+                    Best match for: <span>{{ lastSearchQuery }}</span>
+                </span>
+                <span v-else class="search-result-none">
+                    ⚠ No tyres found within your budget.
+                </span>
+            </div>
+            <button @click="clearSearch" class="btn-action btn-red btn-clear">Clear Search</button>
+        </div>
+
+        <div v-if="searchMode && rankedTires.length === 0" class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <h3 class="no-results-title">No Matches Found</h3>
+            <p v-if="carResult" class="no-results-body">
+                Your <strong>{{ carResult.year }} {{ carResult.make }} {{ carResult.model }}</strong> requires
+                <strong class="no-results-oe">{{ carResult.oeSize }}</strong> tyres —
+                we don't currently stock this size.
+            </p>
+            <p v-else class="no-results-body">
+                We don't currently have any tyres that match your request.
+            </p>
+            <p class="no-results-hint">
+                <a href="#" class="no-results-link">Contact us</a> to place a custom order for the exact size you need.
+            </p>
+        </div>
+
+        <div class="tire-grid">
+            <!-- Search result: Best Match card -->
+            <div v-if="searchMode && rankedTires.length > 0"
+                 :key="rankedTires[0].id"
+                 class="tire-card top-match">
+                <div class="badge-ai">Best Match</div>
+                <!-- Wishlist heart -->
+                <button class="wishlist-btn"
+                        @click="toggleWishlist(rankedTires[0])"
+                        :title="isWishlisted(rankedTires[0].id) ? 'Remove from Wishlist' : 'Add to Wishlist'">
+                    {{ isWishlisted(rankedTires[0].id) ? '❤️' : '🤍' }}
+                </button>
+                <!-- Tyre image -->
+                <div class="tire-img-wrap">
+                    <img v-if="getTireImage(rankedTires[0])"
+                         :src="getTireImage(rankedTires[0])"
+                         :alt="rankedTires[0].name"
+                         class="tire-img">
+                    <div v-else class="tire-img-placeholder">🛞</div>
+                </div>
+                <div class="tire-brand">{{ rankedTires[0].name }}</div>
+                <span class="tire-size">{{ rankedTires[0].size }}</span>
+                <p class="tire-desc">{{ rankedTires[0].description }}</p>
+                <div class="tire-price">R{{ rankedTires[0].price }}</div>
+                <button class="btn-action btn-red tire-select-btn" @click="addToCart(tire)">Add to Cart</button>
+                <div v-if="rankedTires[0].matchReason" class="tire-match-reason">
+                    "{{ rankedTires[0].matchReason }}"
+                </div>
+            </div>
+
+            <!-- All tyres (no search) -->
+            <div v-if="!searchMode" v-for="tire in tires"
+                 :key="tire.id"
+                 class="tire-card">
+                <!-- Wishlist heart -->
+                <button class="wishlist-btn"
+                        @click="toggleWishlist(tire)"
+                        :title="isWishlisted(tire.id) ? 'Remove from Wishlist' : 'Add to Wishlist'">
+                    {{ isWishlisted(tire.id) ? '❤️' : '🤍' }}
+                </button>
+                <!-- Tyre image -->
+                <div class="tire-img-wrap">
+                    <img v-if="getTireImage(tire)"
+                         :src="getTireImage(tire)"
+                         :alt="tire.name"
+                         class="tire-img">
+                    <div v-else class="tire-img-placeholder">🛞</div>
+                </div>
+                <div class="tire-brand">{{ tire.name }}</div>
+                <span class="tire-size">{{ tire.size }}</span>
+                <p class="tire-desc">{{ tire.description }}</p>
+                <div class="tire-price">R{{ tire.price }}</div>
+                <button class="btn-action btn-red tire-select-btn" @click="addToCart(tire)">Add to Cart</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── Wishlist Side Panel ── -->
+    <div v-if="wishlistOpen" class="wishlist-overlay" @click.self="wishlistOpen = false">
+        <div class="wishlist-panel">
+            <div class="wishlist-panel-header">
+                <div class="wishlist-panel-title">♡ MY WISHLIST</div>
+                <button class="wishlist-close" @click="wishlistOpen = false">×</button>
+            </div>
+
+            <!-- Not logged in notice -->
+            <div v-if="!currentUser" class="wishlist-login-note">
+                <strong>You're not signed in.</strong> Your wishlist is saved locally for now.
+                <a href="Authorisation.html">Sign in</a> to sync it across devices.
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="wishlist.length === 0" class="wishlist-empty">
+                <div class="wishlist-empty-icon">🤍</div>
+                <div>No tyres saved yet.<br>Tap the heart on any tyre to save it here.</div>
+            </div>
+
+            <!-- Wishlist items -->
+            <div v-for="item in wishlist" :key="item.id" class="wishlist-item">
+                <!-- Thumbnail -->
+                <img v-if="getTireImage(item)" :src="getTireImage(item)" :alt="item.name" class="wishlist-item-img">
+                <div v-else class="wishlist-item-img-placeholder">🛞</div>
+                <div class="wishlist-item-info">
+                    <div class="wishlist-item-name">{{ item.name }}</div>
+                    <div class="wishlist-item-size">{{ item.size }}</div>
+                    <div class="wishlist-item-price">R{{ item.price }}</div>
+                    <div class="wishlist-item-actions">
+                        <button class="btn-wl-cart" @click="addToCart(item); wishlistOpen = false">Add to Cart</button>
+                        <button class="btn-wl-remove" @click="toggleWishlist(item)">Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-widget">
+        <button class="chat-toggle" @click="chatOpen = !chatOpen">{{ chatOpen ? '×' : '💬' }}</button>
+        <div v-if="chatOpen" class="chat-window">
+            <div class="chat-header">Do we have the tyre you are looking for?</div>
+            <div class="chat-msgs" id="msg-flow">
+                <div v-for="m in chatHistory" :class="['msg', m.role === 'model' ? 'ai' : 'user']">
+                    {{ m.parts[0].text }}
+                </div>
+            </div>
+            <div class="chat-input">
+                <input v-model="userQuery" @keyup.enter="askGemini" placeholder="Ask anything about our stock...">
+                <button @click="askGemini">SEND</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    import { collection, getDocs, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import { db } from './Backend/Firebase.js';
+
+    const auth = getAuth();
+
+    // ── API base URL ──────────────────────────────────────────────────────────
+    // In production (Render), the frontend is served by the same Express server,
+    // so API calls are relative (no host needed). In local dev with Live Server
+    // on port 5500, we need to point to localhost:3000.
+    const API_BASE = (window.location.port === '5500' || window.location.port === '5501')
+        ? 'http://localhost:3000'
+        : '';  // empty string = same origin (works on Render)
+
+    createApp({
+        data() {
+            return {
+                tires: [],
+                activeTab: 'prompt',
+                searchQuery: '',
+                lastSearchQuery: '',
+                isSearching: false,
+                searchError: '',
+
+                carMake: '',
+                carModel: '',
+                carYear: '',
+                isCarSearching: false,
+                carResult: null,
+                availableModels: [],
+                years: [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015],
+
+                carDatabase: {
+                    "Audi": ["A3 (Sportback)"],
+                    "BMW": ["3 Series (320i)"],
+                    "Chery": ["Tiggo 4 Pro", "Tiggo 7 Pro", "Tiggo 8 Pro"],
+                    "Datsun": ["Go"],
+                    "Ford": ["Ranger (T6)", "Ranger (Next-Gen)", "Everest", "EcoSport", "Figo"],
+                    "GWM": ["P-Series", "Steed 5"],
+                    "Haval": ["Jolion", "H6"],
+                    "Honda": ["Amaze"],
+                    "Hyundai": ["Grand i10", "i20", "H100", "Creta", "Tucson", "Venue"],
+                    "Isuzu": ["KB / D-Max", "D-Max (Gen 7)"],
+                    "Kia": ["Picanto", "Rio", "Sportage", "Sonet", "Seltos"],
+                    "Mahindra": ["Pik-Up", "XUV300"],
+                    "Mazda": ["CX-3", "CX-5"],
+                    "Mercedes-Benz": ["C-Class (C200)"],
+                    "Nissan": ["NP200", "Navara", "Almera", "Magnite"],
+                    "Renault": ["Kwid", "Triber", "Clio", "Duster", "Sandero", "Kiger"],
+                    "Suzuki": ["Swift", "S-Presso", "Ertiga", "Baleno", "Celerio", "Jimny", "Vitara Brezza", "Grand Vitara"],
+                    "Toyota": ["Hilux", "Fortuner", "Corolla Cross", "Starlet", "HiAce (Ses'fikile)", "Urban Cruiser", "Corolla Quest", "Etios", "RAV4", "Rumion", "Vitz"],
+                    "VW": ["Polo Vivo", "Polo (TSI)", "Polo (Next Gen)", "T-Cross", "Tiguan", "Amarok"]
+                },
+
+                searchMode: false,
+                rankedTires: [],
+                chatOpen: false,
+                userQuery: '',
+                chatHistory: [{ role: "model", parts: [{ text: "Welcome! I can help you navigate our inventory. What are you looking for?" }] }],
+
+                // ── Wishlist ──
+                wishlist: [],       // array of tire objects saved by this user
+                wishlistOpen: false,
+                currentUser: null,  // Firebase auth user
+
+                // ── Brand image fallbacks ──
+                // If a tyre doc has no imageurl, the name is matched against these.
+                // Add more brands here as you expand your inventory.
+                brandImages: {
+                    'michelin':     'https://i.ibb.co/6Rt0Rs1C/michellin.jpg',
+                    'firestone':    'https://i.ibb.co/cKKCr6sG/Firestone.jpg',
+                    'dunlop':       'https://i.ibb.co/ksN6NpXx/Dunlop.jpg',
+                    'bridgestone':  'https://i.ibb.co/PG6VKcHC/Bridgestone.jpg',
+                    'continental':  'https://i.ibb.co/d0h6cwjf/Continental.jpg',
+                    'pirelli':      'https://i.ibb.co/BK4ZbmCJ/pirelli.jpg',
+                    'goodyear':     'https://i.ibb.co/35KF3RcW/Goodyear.jpg',
+                },
+
+                // ── Image Search ──
+                imgPreviewUrl: null,      // base64 data URL shown in preview
+                imgFileName: '',
+                imgFileSize: '',
+                imgDragging: false,
+                isImageSearching: false,
+                imgAnalysedText: '',      // what Gemini saw in the image
+                imgMatches: [],           // matched tyre objects from inventory
+                imgSearchDone: false,
+            }
+        },
+
+        methods: {
+            updateModels() {
+                this.availableModels = this.carDatabase[this.carMake] || [];
+                this.carModel = "";
+            },
+
+            async fetchTires() {
+                const q = await getDocs(collection(db, "Tires"));
+                this.tires = q.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            },
+
+            /**
+             * Returns the correct image URL for a tyre.
+             * Priority:
+             *   1. imageurl field saved directly on the Firestore document
+             *   2. Brand fallback — matches the tyre's name against known brands
+             *   3. null → caller shows the 🛞 placeholder
+             */
+            getTireImage(tire) {
+                if (!tire) return null;
+                // 1. Use the imageurl saved in Firestore if present
+                if (tire.imageurl) return tire.imageurl;
+                // 2. Auto-match by brand name (case-insensitive)
+                const nameLower = (tire.name || '').toLowerCase();
+                for (const [brand, url] of Object.entries(this.brandImages)) {
+                    if (nameLower.includes(brand)) return url;
+                }
+                return null;
+            },
+
+            // ── WISHLIST HELPERS ──────────────────────────────────────────────
+
+            isWishlisted(tireId) {
+                return this.wishlist.some(t => t.id === tireId);
+            },
+
+            /**
+             * Toggle a tyre in/out of wishlist.
+             * If user is signed in → persist to Firestore under Wishlist/{email}
+             * If not signed in → keep in memory only (lost on refresh, but shown with a sign-in prompt)
+             */
+            async toggleWishlist(tire) {
+                const already = this.isWishlisted(tire.id);
+
+                if (already) {
+                    // Remove
+                    this.wishlist = this.wishlist.filter(t => t.id !== tire.id);
+                    if (this.currentUser) {
+                        await this.removeFromFirestoreWishlist(tire.id);
+                    }
+                    this.showToast('Removed from Wishlist.');
+                } else {
+                    // Add
+                    const entry = { id: tire.id, name: tire.name, size: tire.size, price: tire.price };
+                    this.wishlist.push(entry);
+                    if (this.currentUser) {
+                        await this.saveToFirestoreWishlist(entry);
+                    }
+                    this.showToast('❤️ Saved to Wishlist! — <button onclick="document.querySelector(\'[data-wl-open]\').click()" style="background:none;border:none;color:var(--twt-red);font-weight:700;cursor:pointer;text-decoration:underline;">View Wishlist</button>');
+                }
+            },
+
+            async saveToFirestoreWishlist(entry) {
+                try {
+                    const ref = doc(db, "Wishlist", this.currentUser.email);
+                    // Store each tyre as a field keyed by its ID (matches your screenshot structure)
+                    await setDoc(ref, { [entry.id]: entry.size }, { merge: true });
+                } catch (e) {
+                    console.error("Wishlist save error:", e);
+                }
+            },
+
+            async removeFromFirestoreWishlist(tireId) {
+                try {
+                    const ref = doc(db, "Wishlist", this.currentUser.email);
+                    await setDoc(ref, { [tireId]: deleteField() }, { merge: true });
+                } catch (e) {
+                    console.error("Wishlist remove error:", e);
+                }
+            },
+
+            /**
+             * Load the user's wishlist from Firestore on login.
+             * The Firestore doc stores { tireId: tireSize, ... } fields.
+             * We cross-reference with the loaded tires array to get full details.
+             */
+            async loadFirestoreWishlist() {
+                try {
+                    const ref = doc(db, "Wishlist", this.currentUser.email);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) {
+                        const data = snap.data(); // { "MichelinXYZ": "265/60R20", ... }
+                        // Map saved IDs back to full tire objects (need tires loaded first)
+                        const saved = [];
+                        for (const [tireId, tireSize] of Object.entries(data)) {
+                            const full = this.tires.find(t => t.id === tireId);
+                            if (full) {
+                                saved.push({ id: full.id, name: full.name, size: full.size, price: full.price });
+                            } else {
+                                // Tire might no longer be in stock, still show with what we have
+                                saved.push({ id: tireId, name: tireId, size: tireSize, price: '—' });
+                            }
+                        }
+                        this.wishlist = saved;
+                    }
+                } catch (e) {
+                    console.error("Wishlist load error:", e);
+                }
+            },
+
+            
+
+            // ── IMAGE SEARCH ──────────────────────────────────────────────────
+
+            onImgSelect(event) {
+                const file = event.target.files[0];
+                if (file) this.loadImageFile(file);
+            },
+
+            onImgDrop(event) {
+                this.imgDragging = false;
+                const file = event.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) this.loadImageFile(file);
+            },
+
+            loadImageFile(file) {
+                this.imgFileName = file.name;
+                this.imgFileSize = (file.size / 1024).toFixed(0) + ' KB';
+                this.imgMatches = [];
+                this.imgAnalysedText = '';
+                this.imgSearchDone = false;
+                const reader = new FileReader();
+                reader.onload = (e) => { this.imgPreviewUrl = e.target.result; };
+                reader.readAsDataURL(file);
+            },
+
+            clearImageSearch() {
+                this.imgPreviewUrl = null;
+                this.imgFileName = '';
+                this.imgFileSize = '';
+                this.imgMatches = [];
+                this.imgAnalysedText = '';
+                this.imgSearchDone = false;
+            },
+
+            async runImageSearch() {
+                if (!this.imgPreviewUrl) return;
+                this.isImageSearching = true;
+                this.imgMatches = [];
+                this.imgAnalysedText = '';
+                this.imgSearchDone = false;
+
+                try {
+                    const inventory = this.tires
+                        .map(t => `${t.id}|${t.name}|${t.size}|R${t.price}|${t.description}`)
+                        .join('\n');
+
+                    const response = await fetch(`${API_BASE}/analyse-tyre-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageBase64: this.imgPreviewUrl, inventory })
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Analysis failed');
+                    }
+
+                    const data = await response.json();
+                    this.imgAnalysedText = data.analysed || '';
+                    // Enrich matches with full tire data from our local tires array
+                    this.imgMatches = (data.matches || []).map(m => {
+                        const full = this.tires.find(t => t.id === m.id);
+                        return full ? { ...full, matchReason: m.matchReason } : null;
+                    }).filter(Boolean);
+
+                } catch (e) {
+                    console.error('Image search error:', e);
+                    this.showToast('⚠ Could not analyse image. Try a clearer photo.');
+                } finally {
+                    this.isImageSearching = false;
+                    this.imgSearchDone = true;
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────────
+
+            extractBudget(query) {
+                const match = query.match(/(?:under|below|max|budget|less than|no more than)?\s*R?\s*(\d+)/i);
+                return match ? Number(match[1]) : null;
+            },
+
+            clearSearch() {
+                this.searchMode = false;
+                this.rankedTires = [];
+                this.searchQuery = '';
+                this.lastSearchQuery = '';
+                this.carResult = null;
+                this.searchError = '';
+            },
+
+            async runAISearch() {
+                if (!this.searchQuery.trim()) return;
+                this.isSearching = true;
+                this.searchError = '';
+                this.lastSearchQuery = this.searchQuery;
+                try {
+                    const budget = this.extractBudget(this.searchQuery);
+                    const eligibleTires = budget
+                        ? this.tires.filter(t => Number(t.price) <= budget)
+                        : this.tires;
+
+                    if (budget !== null && eligibleTires.length === 0) {
+                        this.rankedTires = [];
+                        this.searchMode = true;
+                        return;
+                    }
+
+                    const inventory = eligibleTires.map(t => `ID:${t.id}|${t.name}|${t.size}|R${t.price}|${t.description}`).join('\n');
+
+                    const prompt = `You are a tyre recommendation engine. 
+From the inventory below, pick the SINGLE BEST tyre for the customer's request.
+RULES:
+- You may ONLY use tyres from the list below. Never suggest a tyre not in this list.
+- Return ONLY valid JSON with no markdown, no extra text.
+- Return exactly this shape: {"id": "<tyre id>", "matchReason": "<one sentence why>"}
+
+Inventory:
+${inventory}
+
+Customer request: ${this.searchQuery}`;
+
+                    const response = await fetch(`${API_BASE}/ask-ai`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ inventory, message: prompt })
+                    });
+                    const data = await response.json();
+                    const clean = data.reply.replace(/```json|```/g, '').trim();
+                    const pick = JSON.parse(clean);
+
+                    const matched = eligibleTires.find(t => t.id === pick.id);
+                    if (matched) {
+                        this.rankedTires = [{ ...matched, matchReason: pick.matchReason }];
+                    } else {
+                        const fallback = [...eligibleTires].sort((a, b) => a.price - b.price)[0];
+                        this.rankedTires = fallback ? [{ ...fallback, matchReason: "Closest available match to your request." }] : [];
+                    }
+                    this.searchMode = true;
+                } catch (e) {
+                    console.error(e);
+                    this.searchError = 'Could not retrieve a recommendation. Please try again.';
+                } finally { this.isSearching = false; }
+            },
+
+            async runCarSearch() {
+                if (!this.carMake || !this.carModel || !this.carYear) return;
+                this.isCarSearching = true;
+                this.searchError = '';
+                this.lastSearchQuery = `${this.carYear} ${this.carMake} ${this.carModel}`;
+                try {
+                    const inventoryStr = this.tires
+                        .map(t => `${t.id}|${t.name}|${t.size}|R${t.price}|${t.description}`)
+                        .join('\n');
+
+                    const lookupRes = await fetch(`${API_BASE}/lookup-car-tyres`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            make: this.carMake,
+                            model: this.carModel,
+                            year: this.carYear,
+                            inventory: inventoryStr
+                        })
+                    });
+
+                    if (!lookupRes.ok) {
+                        const err = await lookupRes.json();
+                        throw new Error(err.error || "Lookup failed");
+                    }
+
+                    const { oeSize, rimInches, bestTyreId, matchReason } = await lookupRes.json();
+                    this.carResult = { make: this.carMake, model: this.carModel, year: this.carYear, oeSize };
+
+                    if (!bestTyreId) {
+                        if (oeSize && oeSize !== 'Unknown') {
+                            const normOE = oeSize.replace(/\s/g, '').toUpperCase();
+                            const sizeMatch = this.tires.find(t => t.size && t.size.replace(/\s/g, '').toUpperCase() === normOE);
+                            this.rankedTires = sizeMatch ? [{ ...sizeMatch, matchReason: `OE size match (${oeSize}) for your ${this.carYear} ${this.carMake} ${this.carModel}.` }] : [];
+                        } else {
+                            this.rankedTires = [];
+                        }
+                    } else {
+                        let matched = this.tires.find(t => t.id === bestTyreId);
+                        if (!matched && oeSize && oeSize !== 'Unknown') {
+                            const normOE = oeSize.replace(/\s/g, '').toUpperCase();
+                            matched = this.tires.find(t => t.size && t.size.replace(/\s/g, '').toUpperCase() === normOE);
+                        }
+                        this.rankedTires = matched ? [{ ...matched, matchReason }] : [];
+                    }
+                    this.searchMode = true;
+                } catch (e) {
+                    console.error(e);
+                    this.searchError = 'Could not find a match for that vehicle. Please try again.';
+                } finally { this.isCarSearching = false; }
+            },
+
+            async askGemini() {
+                if (!this.userQuery.trim()) return;
+                const text = this.userQuery;
+                this.chatHistory.push({ role: "user", parts: [{ text }] });
+                this.userQuery = '';
+                try {
+                    const inventory = this.tires.map(t => `${t.name} ${t.size} (R${t.price})`).join(', ');
+                    const response = await fetch(`${API_BASE}/ask-ai`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ inventory, message: text })
+                    });
+                    const data = await response.json();
+                    this.chatHistory.push({ role: "model", parts: [{ text: data.reply }] });
+                } catch (e) {
+                    this.chatHistory.push({ role: "model", parts: [{ text: "Sorry, I couldn't connect to the AI. Please try again." }] });
+                }
+                this.$nextTick(() => {
+                    const el = document.getElementById('msg-flow');
+                    if (el) el.scrollTop = el.scrollHeight;
+                });
+            },
+
+            addToCart(tire) {
+                if (!tire) return;
+                try {
+                    let cart = JSON.parse(localStorage.getItem('faiq_cart') || '[]');
+                    const existing = cart.find(i => i.id === tire.id);
+                    if (existing) {
+                        existing.qty++;
+                    } else {
+                        cart.push({ id: tire.id, name: tire.name, size: tire.size, description: tire.description, price: tire.price, qty: 1 });
+                    }
+                    localStorage.setItem('faiq_cart', JSON.stringify(cart));
+                    this.showToast('Added to cart! ✓  — <a href="Checkout.html" style="color:var(--twt-red);font-weight:700;">View Cart</a>');
+                } catch(e) {
+                    console.error('Cart error:', e);
+                }
+            },
+
+            showToast(msg) {
+                let t = document.getElementById('store-toast');
+                if (!t) {
+                    t = document.createElement('div');
+                    t.id = 'store-toast';
+                    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 24px;font-size:0.85rem;font-weight:700;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;';
+                    document.body.appendChild(t);
+                }
+                t.innerHTML = msg;
+                t.style.opacity = '1';
+                t.style.pointerEvents = 'auto';
+                clearTimeout(t._timer);
+                t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; }, 3500);
+            },
+        },
+
+        async mounted() {
+            // 1. Load tires first
+            await this.fetchTires();
+
+            // 2. Listen for auth state — load wishlist when user is known
+            onAuthStateChanged(auth, async (user) => {
+                this.currentUser = user;
+                if (user) {
+                    await this.loadFirestoreWishlist();
+                } else {
+                    // User signed out — clear wishlist from memory
+                    this.wishlist = [];
+                }
+            });
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faiq's Tyres | Premium South African Tyre Specialist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Home Page Specific Styles & Animations */
+        
+        /* Hero Section */
+        .home-hero {
+            position: relative;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            background-color: #111;
+            color: white;
+            padding: 0 20px;
+        }
+
+        /* Animated Background */
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            /* Placeholder gradient to simulate a sleek, dark automotive look. 
+               Replace the linear-gradient with a background-image URL of a premium tire or dark road if desired */
+            background: linear-gradient(135deg, rgba(15,15,15,0.9) 0%, rgba(30,30,30,0.7) 100%), 
+                        url('https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=2000&auto=format&fit=crop') center/cover;
+            z-index: 0;
+            animation: slowZoom 20s ease-in-out infinite alternate;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .hero-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(4rem, 8vw, 7rem);
+            line-height: 0.9;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.3s;
+        }
+
+        .hero-title span {
+            color: #FF3D00; /* Matching the Google red/brand accent */
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #ccc;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.6s;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.9s;
+        }
+
+        /* Custom Button Styles for Home */
+        .btn-main {
+            padding: 16px 32px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #FF3D00; /* Matches your btn-red */
+            color: white;
+            border: 2px solid #FF3D00;
+            box-shadow: 0 4px 15px rgba(255, 61, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: transparent;
+            color: #FF3D00;
+            box-shadow: 0 6px 20px rgba(255, 61, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background-color: white;
+            color: #111;
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 80px 20px;
+            background-color: #fff;
+            color: #111;
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 40px 20px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            border: 1px solid #eee;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+            border-color: #FF3D00;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .feature-text {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slowZoom {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-actions {
+                flex-direction: column;
+            }
+            .btn-main {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="top-utility">
+            <a href="Warranties.html">Warranties</a>
+            <a href="Contactus.html">Contact Us</a>
+            <a href="Authorisation.html">My Account / Log In</a>
+        </div>
+        <nav>
+            <a href="Homepage.html" class="logo">FAIQ'S <span>TYRES</span></a>
+            <div class="nav-flag">🇿🇦 PREMIUM STOCK</div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="home-hero">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <h1 class="hero-title">Rule The <span>Road</span></h1>
+                <p class="hero-subtitle">Premium stock, guaranteed fitment, and South Africa's first AI-powered tyre recommendation engine. Find your perfect match in seconds.</p>
+                
+                <div class="hero-actions">
+                    <a href="Store.html" class="btn-main btn-primary">Shop All Inventory</a>
+                    <a href="Authorisation.html" class="btn-main btn-secondary">Sign In to Dashboard</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features-section">
+            <div class="features-grid">
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title">AI Tyre Matching</h3>
+                    <p class="feature-text">Not sure what you need? Just tell our AI your budget, vehicle, and driving style, and it will scan our inventory to find the absolute best match.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🚗</div>
+                    <h3 class="feature-title">Smart Profiles</h3>
+                    <p class="feature-text">Create an account to save your vehicle details, track past orders, and get instant recommendations tailored to your specific car make and model.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⭐</div>
+                    <h3 class="feature-title">Premium Stock</h3>
+                    <p class="feature-text">From rugged all-terrains to sleek low-profile performance tyres, we stock only the most trusted, high-quality brands for South African roads.</p>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

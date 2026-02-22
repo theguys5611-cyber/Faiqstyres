@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faiq's Tyres | Fitment Centre</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* ═══════════════════════════════════════
+           SERVICES STRIP
+        ═══════════════════════════════════════ */
+        .services-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            background: var(--twt-dark);
+            color: white;
+        }
+        .service-tile {
+            padding: 28px 24px;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+        .service-tile:last-child { border-right: none; }
+        .service-icon-wrap { font-size: 2rem; margin-bottom: 10px; }
+        .service-name {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: white;
+        }
+        .service-desc { font-size: 0.8rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+        /* ═══════════════════════════════════════
+           FITMENT TWO-COLUMN LAYOUT
+        ═══════════════════════════════════════ */
+        .fitment-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1300px;
+            margin: 30px auto 80px;
+            padding: 0 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .fitment-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ═══════════════════════════════════════
+           MAP CARD
+        ═══════════════════════════════════════ */
+        .map-card {
+            background: white;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--twt-red);
+            padding: 30px;
+        }
+        .map-card-header { margin-bottom: 20px; }
+
+        #map {
+            width: 100%;
+            height: 280px;
+            background: #e8e8e8;
+            border: 1px solid var(--border);
+            margin-bottom: 18px;
+            border-radius: 2px;
+        }
+
+        .location-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .location-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            border-radius: 0;
+        }
+        .location-input:focus { outline: none; border-color: var(--twt-red); }
+        .btn-gps {
+            padding: 11px 14px;
+            background: white;
+            border: 1px solid var(--border);
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .btn-gps:hover { border-color: var(--twt-red); color: var(--twt-red); }
+        .btn-gps.loading { opacity: 0.6; pointer-events: none; }
+        .btn-calc {
+            padding: 11px 18px;
+            background: var(--twt-red);
+            color: white;
+            border: none;
+            font-family: var(--font-display);
+            font-size: 1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-calc:hover { background: #b3050f; }
+
+        .distance-result {
+            display: none;
+            gap: 20px;
+            align-items: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .distance-result.show { display: flex; }
+        .dist-stat { text-align: center; }
+        .dist-val { font-family: var(--font-display); font-size: 1.8rem; color: var(--twt-dark); line-height: 1; }
+        .dist-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-top: 3px; }
+        .btn-open-maps {
+            margin-left: auto;
+            padding: 9px 18px;
+            background: var(--twt-dark);
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .btn-open-maps:hover { background: #000; }
+
+        .distance-error {
+            display: none;
+            padding: 12px 15px;
+            background: #fff5f5;
+            border-left: 4px solid var(--twt-red);
+            font-size: 0.82rem;
+            color: #b00;
+            margin-bottom: 12px;
+        }
+        .distance-error.show { display: block; }
+
+        .store-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .info-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .info-val {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--twt-dark);
+            line-height: 1.4;
+        }
+        .info-val span { display: block; font-weight: 400; color: var(--text-muted); }
+        .info-val a { color: var(--twt-red); text-decoration: none; }
+        .info-val a:hover { text-decoration: underline; }
+
+        /* ═══════════════════════════════════════
+           BOOKING CARD
+        ═══════════════════════════════════════ */
+        .booking-card {
+            background: white;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--twt-red);
+            padding: 35px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+        .form-textarea {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 90px;
+            border-radius: 0;
+        }
+        .form-textarea:focus { outline: none; border-color: var(--twt-red); }
+
+        .booking-error {
+            display: none;
+            padding: 12px 15px;
+            background: #fff5f5;
+            border-left: 4px solid var(--twt-red);
+            font-size: 0.82rem;
+            color: #b00;
+            margin-bottom: 16px;
+        }
+        .booking-error.show { display: block; }
+
+        .btn-book {
+            width: 100%;
+            padding: 16px;
+            background: var(--twt-red);
+            color: white;
+            border: none;
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .btn-book:hover:not(:disabled) { background: #b3050f; }
+        .btn-book:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ═══════════════════════════════════════
+           SUCCESS STATE
+        ═══════════════════════════════════════ */
+        .booking-success {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .booking-success.show { display: block; }
+        .booking-success-icon { font-size: 3.5rem; margin-bottom: 16px; }
+        .booking-success-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--twt-dark);
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+        .booking-success-body { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <header>
+        <div class="top-utility">
+            <a href="Warranties.html">Warranties</a>
+            <a href="Contactus.html">Contact Us</a>
+            <a href="Authorisation.html">My Account / Log In</a>
+        </div>
+        <nav>
+            <!-- Logo now correctly links to Homepage -->
+            <a href="Homepage.html" class="logo">FAIQ'S <span>TYRES</span></a>
+            <div class="nav-flag">🇿🇦 PREMIUM STOCK</div>
+        </nav>
+    </header>
+
+    <!-- ══════════ BREADCRUMB ══════════ -->
+    <div class="breadcrumbs">
+        <a href="Homepage.html">🏠 Home</a> / <a href="Store.html">Shop</a> / <span style="color:black;">Fitment Centre</span>
+    </div>
+
+    <!-- ══════════ HERO ══════════ -->
+    <section class="store-hero">
+        <h1 class="store-title">BOOK A FITMENT</h1>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px; max-width:550px;">
+            Book your tyre fitting, balancing, or rotation at our Rondebosch centre. 
+            Fill in your details below and we'll confirm your slot by email.
+        </p>
+        <div class="action-bar">
+            <button class="btn-action btn-red" onclick="document.getElementById('booking-card').scrollIntoView({behavior:'smooth'})">Book Now</button>
+            <a href="Store.html" class="btn-action btn-dark">Browse Tyres</a>
+        </div>
+    </section>
+
+    <!-- ══════════ SERVICES STRIP ══════════ -->
+    <div class="services-strip">
+        <div class="service-tile">
+            <div class="service-icon-wrap">🔧</div>
+            <div class="service-name">FITTING</div>
+            <div class="service-desc">Full tyre mount and fit on all rim sizes from 13″ to 22″</div>
+        </div>
+        <div class="service-tile">
+            <div class="service-icon-wrap">⚖️</div>
+            <div class="service-name">BALANCING</div>
+            <div class="service-desc">Computer-aided wheel balancing for a smooth, vibration-free ride</div>
+        </div>
+        <div class="service-tile">
+            <div class="service-icon-wrap">🔩</div>
+            <div class="service-name">ROTATION</div>
+            <div class="service-desc">Extend tyre life with a professional rotation service</div>
+        </div>
+        <div class="service-tile">
+            <div class="service-icon-wrap">🔍</div>
+            <div class="service-name">INSPECTION</div>
+            <div class="service-desc">Free visual health check on all four tyres with every visit</div>
+        </div>
+    </div>
+
+    <!-- ══════════ MAIN TWO-COL LAYOUT ══════════ -->
+    <div class="fitment-layout">
+
+        <!-- LEFT: Map + Distance -->
+        <div class="map-card">
+
+            <div class="map-card-header">
+                <span class="card-label">Our Location</span>
+                <div class="card-title">HOW FAR ARE YOU?</div>
+            </div>
+
+            <!-- Google Map renders here -->
+            <div id="map"></div>
+
+            <div class="location-row">
+                <input
+                    id="location-input"
+                    class="location-input"
+                    type="text"
+                    placeholder="Enter your address or suburb…"
+                    onkeyup="if(event.key==='Enter') calcDistance()"
+                >
+                <button class="btn-gps" id="gps-btn" onclick="useGPS()">📍 GPS</button>
+                <button class="btn-calc" onclick="calcDistance()">CALCULATE</button>
+            </div>
+
+            <div class="distance-result" id="distance-result">
+                <div class="dist-stat">
+                    <div class="dist-val" id="dist-km">—</div>
+                    <div class="dist-label">Distance</div>
+                </div>
+                <div class="dist-stat">
+                    <div class="dist-val" id="dist-time">—</div>
+                    <div class="dist-label">Drive Time</div>
+                </div>
+                <a id="gmaps-link" class="btn-open-maps" href="#" target="_blank">Open in Maps ↗</a>
+            </div>
+
+            <div class="distance-error" id="distance-error"></div>
+
+            <div class="store-info">
+                <div>
+                    <div class="info-label">Address</div>
+                    <div class="info-val">Rondebosch <span>Cape Town, 7700</span></div>
+                </div>
+                <div>
+                    <div class="info-label">Trading Hours</div>
+                    <div class="info-val">Mon – Fri: 08:00 – 17:00 <span>Sat: 08:00 – 13:00</span></div>
+                </div>
+                <div>
+                    <div class="info-label">Phone</div>
+                    <div class="info-val"><a href="tel:+27210000000">+27 21 000 0000</a></div>
+                </div>
+                <div>
+                    <div class="info-label">Email</div>
+                    <div class="info-val"><a href="/cdn-cgi/l/email-protection#aac3c4ccc5eacccbc3dbd9ded3d8cfd984c9c584d0cb"><span class="__cf_email__" data-cfemail="5c35323a331c3a3d352d2f28252e392f723f3372263d">[email&#160;protected]</span></a></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Booking form -->
+        <div class="booking-card" id="booking-card">
+
+            <span class="card-label">Schedule a Visit</span>
+            <div class="card-title">BOOK YOUR FITMENT</div>
+
+            <div id="booking-form">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input class="form-input" id="f-first" type="text" placeholder="John">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input class="form-input" id="f-last" type="text" placeholder="Smith">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input class="form-input" id="f-phone" type="tel" placeholder="+27 82 000 0000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input class="form-input" id="f-email" type="email" placeholder="john@example.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Preferred Date</label>
+                        <input class="form-input" id="f-date" type="date">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred Time</label>
+                        <select class="form-select" id="f-time">
+                            <option value="" disabled selected>Select slot</option>
+                            <option>08:00 – 09:00</option>
+                            <option>09:00 – 10:00</option>
+                            <option>10:00 – 11:00</option>
+                            <option>11:00 – 12:00</option>
+                            <option>13:00 – 14:00</option>
+                            <option>14:00 – 15:00</option>
+                            <option>15:00 – 16:00</option>
+                            <option>16:00 – 17:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Service Required</label>
+                    <select class="form-select" id="f-service">
+                        <option value="" disabled selected>Select service</option>
+                        <option>Tyre Fitting</option>
+                        <option>Wheel Balancing</option>
+                        <option>Tyre Fitting + Balancing</option>
+                        <option>Tyre Rotation</option>
+                        <option>Full Inspection</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Vehicle (Make, Model &amp; Year)</label>
+                    <input class="form-input" id="f-vehicle" type="text" placeholder="e.g. 2021 Toyota Hilux">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (optional)</label>
+                    <textarea class="form-textarea" id="f-notes" placeholder="Any special requests or tyre details…"></textarea>
+                </div>
+
+                <div class="booking-error" id="booking-error"></div>
+
+                <button class="btn-book" id="book-btn" onclick="submitBooking()">CONFIRM BOOKING</button>
+
+            </div><!-- /#booking-form -->
+
+            <div class="booking-success" id="booking-success">
+                <div class="booking-success-icon">✅</div>
+                <div class="booking-success-title">BOOKING CONFIRMED</div>
+                <div class="booking-success-body">
+                    Thanks, <strong id="success-name"></strong>! We'll send a confirmation to your email.<br>
+                    See you at our Rondebosch fitment centre.
+                </div>
+            </div>
+
+        </div><!-- /#booking-card -->
+
+    </div><!-- /.fitment-layout -->
+
+</div><!-- /#app -->
+
+<!-- ══════════ SCRIPTS ══════════ -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+   
+    const EMAILJS_SERVICE_ID  = 'service_9z59dco';   
+    const EMAILJS_TEMPLATE_ID = 'template_1y2qfcd';  
+    const EMAILJS_PUBLIC_KEY  = 'pGu62eOpt7vGgSEdh';   
+
+    const FAIQ_LAT  = -33.9975;
+    const FAIQ_LNG  = 18.4735;
+    const FAIQ_ADDR = 'Rondebosch, Cape Town, 7700, South Africa';
+
+    let map, distanceService, directionsRenderer, userLatLng;
+
+    /* Called automatically by the Maps API after loading */
+    function initMap() {
+        const faiqPos = { lat: FAIQ_LAT, lng: FAIQ_LNG };
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: faiqPos, zoom: 14,
+            styles: [
+                { elementType: 'geometry',          stylers: [{ color: '#f5f5f5' }] },
+                { elementType: 'labels.icon',       stylers: [{ visibility: 'off' }] },
+                { featureType: 'poi',               stylers: [{ visibility: 'off' }] },
+                { featureType: 'transit',           stylers: [{ visibility: 'off' }] },
+                { featureType: 'road',              elementType: 'geometry',         stylers: [{ color: '#ffffff' }] },
+                { featureType: 'road.arterial',     elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+                { featureType: 'road.highway',      elementType: 'geometry',         stylers: [{ color: '#dadada' }] },
+                { featureType: 'water',             elementType: 'geometry',         stylers: [{ color: '#c9d8e8' }] },
+                { featureType: 'landscape',         elementType: 'geometry',         stylers: [{ color: '#f0f0f0' }] }
+            ]
+        });
+
+        const marker = new google.maps.Marker({
+            position: faiqPos, map,
+            title: "Faiq's Tyres — Rondebosch",
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 11,
+                fillColor: '#e30613', fillOpacity: 1,
+                strokeColor: '#ffffff', strokeWeight: 2.5
+            }
+        });
+
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="font-family:'DM Sans',sans-serif;padding:4px 6px;min-width:140px;">
+                        <strong style="color:#e30613;">Faiq's Tyres</strong><br>
+                        <span style="font-size:0.8rem;color:#666;">Rondebosch, Cape Town 7700</span>
+                      </div>`
+        });
+        infoWindow.open(map, marker);
+        marker.addListener('click', () => infoWindow.open(map, marker));
+
+        distanceService    = new google.maps.DistanceMatrixService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            map,
+            polylineOptions: { strokeColor: '#e30613', strokeWeight: 4 }
+        });
+
+        const ac = new google.maps.places.Autocomplete(
+            document.getElementById('location-input'),
+            { componentRestrictions: { country: 'za' } }
+        );
+        ac.addListener('place_changed', () => {
+            const place = ac.getPlace();
+            if (place.geometry) {
+                userLatLng = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+            }
+        });
+    }
+
+    function useGPS() {
+        const btn = document.getElementById('gps-btn');
+        if (!navigator.geolocation) { showDistError('Geolocation is not supported by your browser.'); return; }
+        btn.textContent = '⏳ …';
+        btn.classList.add('loading');
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                userLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                new google.maps.Geocoder().geocode({ location: userLatLng }, (res, status) => {
+                    if (status === 'OK' && res[0]) document.getElementById('location-input').value = res[0].formatted_address;
+                });
+                btn.textContent = '✅ GPS';
+                btn.classList.remove('loading');
+                calcDistance();
+            },
+            () => {
+                showDistError('Could not get your location. Please enter it manually.');
+                btn.textContent = '📍 GPS';
+                btn.classList.remove('loading');
+            }
+        );
+    }
+
+    function calcDistance() {
+        hideDistError(); hideDistResult();
+        const origin = userLatLng || document.getElementById('location-input').value.trim();
+        if (!origin) { showDistError('Please enter your address or use GPS first.'); return; }
+
+        distanceService.getDistanceMatrix(
+            {
+                origins: [origin],
+                destinations: [{ lat: FAIQ_LAT, lng: FAIQ_LNG }],
+                travelMode: google.maps.TravelMode.DRIVING,
+                unitSystem: google.maps.UnitSystem.METRIC
+            },
+            (resp, status) => {
+                if (status !== 'OK') { showDistError('Calculation failed. Please try again.'); return; }
+                const el = resp.rows[0].elements[0];
+                if (el.status !== 'OK') { showDistError('Could not find a driving route from that location.'); return; }
+
+                document.getElementById('dist-km').textContent   = el.distance.text;
+                document.getElementById('dist-time').textContent = el.duration.text;
+
+                const originStr = typeof origin === 'string'
+                    ? encodeURIComponent(origin)
+                    : `${origin.lat},${origin.lng}`;
+                document.getElementById('gmaps-link').href =
+                    `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${encodeURIComponent(FAIQ_ADDR)}&travelmode=driving`;
+
+                showDistResult();
+
+                new google.maps.DirectionsService().route(
+                    { origin, destination: { lat: FAIQ_LAT, lng: FAIQ_LNG }, travelMode: google.maps.TravelMode.DRIVING },
+                    (result, s) => { if (s === 'OK') directionsRenderer.setDirections(result); }
+                );
+            }
+        );
+    }
+
+    function showDistResult()   { document.getElementById('distance-result').classList.add('show'); }
+    function hideDistResult()   { document.getElementById('distance-result').classList.remove('show'); }
+    function showDistError(msg) { const e = document.getElementById('distance-error'); e.textContent = '⚠ ' + msg; e.classList.add('show'); }
+    function hideDistError()    { document.getElementById('distance-error').classList.remove('show'); }
+
+    async function submitBooking() {
+        document.getElementById('booking-error').classList.remove('show');
+        const fields = {
+            firstName : document.getElementById('f-first').value.trim(),
+            lastName  : document.getElementById('f-last').value.trim(),
+            phone     : document.getElementById('f-phone').value.trim(),
+            email     : document.getElementById('f-email').value.trim(),
+            date      : document.getElementById('f-date').value,
+            time      : document.getElementById('f-time').value,
+            service   : document.getElementById('f-service').value,
+            vehicle   : document.getElementById('f-vehicle').value.trim(),
+            notes     : document.getElementById('f-notes').value.trim()
+        };
+
+        // Validation
+        if (!fields.firstName || !fields.lastName) { showBookingError('Please enter your first and last name.'); return; }
+        if (!fields.phone)    { showBookingError('Please enter a contact number.'); return; }
+        if (!fields.email || !fields.email.includes('@')) { showBookingError('Please enter a valid email address.'); return; }
+        if (!fields.date)     { showBookingError('Please choose a preferred date.'); return; }
+        if (!fields.time)     { showBookingError('Please select a time slot.'); return; }
+        if (!fields.service)  { showBookingError('Please select a service.'); return; }
+        if (!fields.vehicle)  { showBookingError('Please enter your vehicle details (make, model & year).'); return; }
+
+        const btn = document.getElementById('book-btn');
+        btn.disabled = true;
+        btn.textContent = 'SUBMITTING…';
+
+        try {
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                from_name : `${fields.firstName} ${fields.lastName}`,
+                from_email: fields.email,
+                phone     : fields.phone,
+                date      : fields.date,
+                time      : fields.time,
+                service   : fields.service,
+                vehicle   : fields.vehicle,
+                notes     : fields.notes || 'None'
+            }, EMAILJS_PUBLIC_KEY);
+
+            // Show success state
+            document.getElementById('booking-form').style.display = 'none';
+            document.getElementById('success-name').textContent   = fields.firstName;
+            document.getElementById('booking-success').classList.add('show');
+        } catch (err) {
+            showBookingError('Could not send your booking. Please call us on +27 21 000 0000 or try again.');
+            console.error('EmailJS error:', err);
+            btn.disabled = false;
+            btn.textContent = 'CONFIRM BOOKING';
+        }
+    }
+
+    function showBookingError(msg) {
+        const el = document.getElementById('booking-error');
+        el.textContent = '⚠ ' + msg;
+        el.classList.add('show');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Prevent selecting past dates
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('f-date').min = new Date().toISOString().split('T')[0];
+    });
+</script>
+
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3p79WPJ7NbJPrmu7Vi2mI5nFbkpAfPFA&libraries=places&callback=initMap" async defer></script>
+
+
+</body>
+</html>

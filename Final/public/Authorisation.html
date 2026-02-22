@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faiq's Tyres | My Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Order History — Customer ── */
+        .orders-section { margin-top: 32px; }
+        .orders-section-title {
+            font-family: var(--font-display);
+            font-size: 1.4rem; letter-spacing: 1px;
+            color: var(--twt-dark); margin-bottom: 16px;
+            padding-bottom: 10px; border-bottom: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .orders-loading {
+            text-align: center; padding: 40px;
+            color: var(--text-muted); font-size: 0.9rem;
+        }
+        .orders-empty {
+            text-align: center; padding: 48px 20px;
+            background: var(--bg-light); border: 1px dashed var(--border);
+        }
+        .orders-empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .orders-empty-title {
+            font-family: var(--font-display);
+            font-size: 1.3rem; color: var(--twt-dark); margin-bottom: 6px;
+        }
+        .orders-empty-sub { font-size: 0.85rem; color: var(--text-muted); }
+
+        .order-card {
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--twt-red);
+            margin-bottom: 14px;
+            background: #fff;
+            transition: box-shadow 0.2s;
+        }
+        .order-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .order-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px; cursor: pointer; gap: 12px; flex-wrap: wrap;
+            background: #fafafa;
+        }
+        .order-card-header:hover { background: #f5f5f5; }
+        .order-ref {
+            font-family: var(--font-mono); font-size: 0.85rem;
+            font-weight: 700; color: var(--twt-dark);
+        }
+        .order-date { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+        .order-status {
+            display: inline-block; padding: 3px 10px;
+            font-size: 0.65rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            border-radius: 2px;
+        }
+        .order-status.pending  { background: #fef3c7; color: #92400e; }
+        .order-status.complete { background: #d1fae5; color: #065f46; }
+        .order-status.cancelled{ background: #fee2e2; color: #991b1b; }
+
+        .order-total {
+            font-family: var(--font-display);
+            font-size: 1.3rem; color: var(--twt-red);
+        }
+        .order-chevron {
+            font-size: 0.8rem; color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+        .order-card.expanded .order-chevron { transform: rotate(180deg); }
+
+        .order-card-body {
+            display: none; padding: 18px; border-top: 1px solid var(--border);
+        }
+        .order-card.expanded .order-card-body { display: block; }
+
+        .order-body-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; margin-bottom: 16px;
+        }
+        @media (max-width: 600px) { .order-body-grid { grid-template-columns: 1fr; } }
+
+        .order-body-section-label {
+            font-size: 0.62rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-muted); margin-bottom: 8px;
+        }
+        .order-item-row {
+            display: flex; justify-content: space-between;
+            font-size: 0.84rem; padding: 6px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .order-item-row:last-child { border-bottom: none; }
+        .order-item-name { color: var(--twt-dark); font-weight: 600; }
+        .order-item-meta { font-size: 0.75rem; color: var(--text-muted); }
+        .order-item-price { font-family: var(--font-mono); font-weight: 700; color: var(--twt-dark); }
+
+        .order-detail-block {
+            background: var(--bg-light); padding: 12px 14px;
+            font-size: 0.82rem; line-height: 1.8; border-left: 3px solid #ddd;
+        }
+        .order-totals-table { width: 100%; font-size: 0.84rem; }
+        .order-totals-table td { padding: 4px 0; }
+        .order-totals-table td:last-child { text-align: right; font-family: var(--font-mono); font-weight: 700; }
+        .order-totals-table .total-row td {
+            font-family: var(--font-display); font-size: 1.1rem;
+            color: var(--twt-red); border-top: 1px solid var(--border);
+            padding-top: 8px;
+        }
+
+        /* ── Admin Orders Panel ── */
+        .admin-orders-section { margin-top: 28px; }
+        .admin-order-filters {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 16px; align-items: center;
+        }
+        .filter-search {
+            flex: 1; min-width: 200px;
+            padding: 9px 13px; border: 1px solid var(--border);
+            font-family: var(--font-mono); font-size: 0.82rem;
+            outline: none;
+        }
+        .filter-search:focus { border-color: var(--twt-red); }
+        .filter-select {
+            padding: 9px 13px; border: 1px solid var(--border);
+            font-size: 0.82rem; background: #fff; outline: none; cursor: pointer;
+        }
+        .filter-select:focus { border-color: var(--twt-red); }
+        .admin-order-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 140px 80px 90px 80px;
+            align-items: center; gap: 12px;
+            padding: 14px 16px; border-bottom: 1px solid var(--border);
+            font-size: 0.83rem; cursor: pointer; transition: background 0.15s;
+        }
+        .admin-order-row:hover { background: #fafafa; }
+        .admin-order-row:last-child { border-bottom: none; }
+        .admin-order-header {
+            display: grid;
+            grid-template-columns: 100px 1fr 140px 80px 90px 80px;
+            gap: 12px; padding: 8px 16px;
+            background: #f5f5f5; font-size: 0.65rem;
+            font-weight: 800; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted);
+        }
+        @media (max-width: 900px) {
+            .admin-order-row, .admin-order-header {
+                grid-template-columns: 100px 1fr 90px 80px;
+            }
+            .admin-order-row > :nth-child(3),
+            .admin-order-header > :nth-child(3) { display: none; }
+            .admin-order-row > :nth-child(6),
+            .admin-order-header > :nth-child(6) { display: none; }
+        }
+        @media (max-width: 600px) {
+            .admin-order-row, .admin-order-header {
+                grid-template-columns: 1fr 80px 80px;
+            }
+            .admin-order-row > :nth-child(1),
+            .admin-order-header > :nth-child(1) { display: none; }
+            .admin-order-row > :nth-child(3),
+            .admin-order-header > :nth-child(3) { display: none; }
+            .admin-order-row > :nth-child(6),
+            .admin-order-header > :nth-child(6) { display: none; }
+        }
+
+        .admin-order-ref { font-family: var(--font-mono); font-weight: 700; font-size: 0.78rem; }
+        .admin-order-customer { font-weight: 600; }
+        .admin-order-email { font-size: 0.75rem; color: var(--text-muted); }
+        .admin-order-total { font-family: var(--font-mono); font-weight: 700; color: var(--twt-red); }
+        .admin-orders-count {
+            font-size: 0.75rem; color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* Status select for admin */
+        .status-select {
+            padding: 3px 8px; font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border: none; cursor: pointer; border-radius: 2px;
+        }
+        .status-select.pending  { background: #fef3c7; color: #92400e; }
+        .status-select.complete { background: #d1fae5; color: #065f46; }
+        .status-select.cancelled{ background: #fee2e2; color: #991b1b; }
+
+        /* Order detail modal (admin) */
+        .order-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            z-index: 9000; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .order-modal-overlay.show { opacity: 1; pointer-events: all; }
+        .order-modal {
+            background: #fff; width: min(700px, 100%);
+            max-height: 90vh; overflow-y: auto;
+            border-top: 5px solid var(--twt-red);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+            transform: translateY(20px); transition: transform 0.2s;
+        }
+        .order-modal-overlay.show .order-modal { transform: translateY(0); }
+        .order-modal-header {
+            padding: 24px 28px; display: flex;
+            align-items: flex-start; justify-content: space-between;
+            border-bottom: 1px solid var(--border); gap: 12px;
+        }
+        .order-modal-title { font-family: var(--font-display); font-size: 1.6rem; letter-spacing: 1px; }
+        .order-modal-close {
+            background: none; border: none; font-size: 1.6rem;
+            cursor: pointer; color: #999; line-height: 1;
+        }
+        .order-modal-close:hover { color: #333; }
+        .order-modal-body { padding: 24px 28px; }
+        .order-modal-section { margin-bottom: 24px; }
+        .order-modal-label {
+            font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 10px;
+        }
+        .order-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 500px) { .order-modal-grid { grid-template-columns: 1fr; } }
+        .order-modal-detail { background: var(--bg-light); padding: 14px; font-size: 0.84rem; line-height: 1.8; }
+        .order-modal-detail strong { color: var(--twt-dark); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+
+    <header>
+        <div class="top-utility">
+            <a href="Warranties.html">Warranties</a>
+            <a href="Contactus.html">Contact Us</a>
+            <a href="Store.html">Back to Shop</a>
+        </div>
+        <nav>
+            <a href="Store.html" class="logo">FAIQ'S <span>TYRES</span></a>
+            <div class="nav-flag" style="color: var(--text-muted);">🇿🇦 PREMIUM STOCK</div>
+        </nav>
+    </header>
+
+    <div class="breadcrumbs">
+        🏠 / <a href="Store.html">Shop</a> / <span style="color: black;">My Account</span>
+    </div>
+
+    <div class="page-hero">
+        <div class="page-title">{{ user ? (role === 'admin' ? 'ADMIN DASHBOARD' : 'MY ACCOUNT') : 'SIGN IN' }}</div>
+        <div class="page-subtitle">{{ user ? 'Manage your account and preferences' : "Access your Faiq's Tyres account or join today" }}</div>
+    </div>
+
+    <!-- ══════════ LOGIN ══════════ -->
+    <div v-if="!user" class="page-container">
+        <div class="login-split card" style="padding: 0; max-width: 880px; margin: 0 auto;">
+            <div class="login-left">
+                <div class="login-left-title">FAIQ'S <span>TYRES</span></div>
+                <p class="login-left-body">South Africa's trusted tyre specialist. Sign in to access your account, track orders, and get personalised recommendations.</p>
+                <ul class="feature-list">
+                    <li>Save your vehicle profiles</li>
+                    <li>Get AI-powered tyre recommendations</li>
+                    <li>Track your purchase history</li>
+                    <li>Exclusive member pricing</li>
+                </ul>
+            </div>
+            <div class="login-right">
+                <div class="login-right-title">WELCOME BACK</div>
+                <p class="login-right-sub">New customers are welcome — signing in for the first time creates your account automatically.</p>
+                <button @click="loginWithGoogle" class="btn-google" :disabled="isLoading">
+                    <span v-if="isLoading"><span class="spinner"></span>Signing in...</span>
+                    <template v-else>
+                        <svg width="18" height="18" viewBox="0 0 48 48">
+                            <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/>
+                            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/>
+                            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.8 13.5-4.7l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7H6.3C9.6 39.6 16.3 44 24 44z"/>
+                            <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.2 5.2C41 35.2 44 30 44 24c0-1.3-.1-2.7-.4-4z"/>
+                        </svg>
+                        Continue with Google
+                    </template>
+                </button>
+                <div class="divider">Secure Sign In</div>
+                <p class="login-fine-print">By signing in, your account will be created automatically if you're a new customer. Your details are stored securely and never shared.</p>
+                <div v-if="loginError" class="login-error">⚠ {{ loginError }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ CUSTOMER DASHBOARD ══════════ -->
+    <div v-else-if="role === 'customer'" class="page-container">
+        <div class="card">
+
+            <!-- Profile header -->
+            <div class="dashboard-header">
+                <div class="user-greeting">
+                    <div class="avatar">{{ userInitial }}</div>
+                    <div>
+                        <div class="greeting-name">{{ user.displayName }} <span class="role-badge customer">Customer</span></div>
+                        <div class="greeting-email">{{ user.email }}</div>
+                        <div class="greeting-since">Member since {{ joinDate }}</div>
+                    </div>
+                </div>
+                <button @click="logout" class="btn-outline">Sign Out</button>
+            </div>
+
+            <!-- Quick nav tiles -->
+            <p class="customer-section-label">What would you like to do?</p>
+            <div class="welcome-grid">
+                <a href="Store.html" class="welcome-tile">
+                    <div class="welcome-tile-icon">🔍</div>
+                    <div class="welcome-tile-title">FIND TYRES</div>
+                    <div class="welcome-tile-body">Use AI to find the perfect tyre for your vehicle or budget.</div>
+                </a>
+                <div class="welcome-tile">
+                    <div class="welcome-tile-icon">🚗</div>
+                    <div class="welcome-tile-title">MY VEHICLES</div>
+                    <div class="welcome-tile-body">Save your vehicle profiles for faster tyre matching. Coming soon.</div>
+                </div>
+                <a href="#order-history" class="welcome-tile" @click.prevent="scrollToOrders">
+                    <div class="welcome-tile-icon">📦</div>
+                    <div class="welcome-tile-title">ORDER HISTORY</div>
+                    <div class="welcome-tile-body">View your past purchases and fitment records below.</div>
+                </a>
+                <a href="Contactus.html" class="welcome-tile">
+                    <div class="welcome-tile-icon">📞</div>
+                    <div class="welcome-tile-title">CONTACT US</div>
+                    <div class="welcome-tile-body">Get in touch with our fitment specialists directly.</div>
+                </a>
+            </div>
+
+            <!-- ── ORDER HISTORY ── -->
+            <div class="orders-section" id="order-history">
+                <div class="orders-section-title">
+                    ORDER HISTORY
+                    <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">
+                        {{ ordersLoading ? 'loading…' : orders.length + ' order' + (orders.length !== 1 ? 's' : '') }}
+                    </span>
+                </div>
+
+                <!-- Loading -->
+                <div v-if="ordersLoading" class="orders-loading">
+                    <div class="spinner" style="display:inline-block; margin-right:8px;"></div>
+                    Loading your orders…
+                </div>
+
+                <!-- Empty -->
+                <div v-else-if="orders.length === 0" class="orders-empty">
+                    <div class="orders-empty-icon">📦</div>
+                    <div class="orders-empty-title">NO ORDERS YET</div>
+                    <p class="orders-empty-sub">Your order history will appear here once you've placed an order.</p>
+                    <a href="Store.html" class="btn-action btn-red" style="margin-top:16px; display:inline-block;">Shop Tyres</a>
+                </div>
+
+                <!-- Order cards -->
+                <div v-else>
+                    <div v-for="order in orders" :key="order.ref"
+                         class="order-card"
+                         :class="{ expanded: order._expanded }">
+
+                        <!-- Header row (clickable to expand) -->
+                        <div class="order-card-header" @click="order._expanded = !order._expanded">
+                            <div>
+                                <div class="order-ref">{{ order.ref }}</div>
+                                <div class="order-date">{{ formatDate(order.placedAt) }}</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                <span class="order-status" :class="order.status || 'pending'">
+                                    {{ order.status || 'pending' }}
+                                </span>
+                                <span class="order-total">R{{ formatNum(order.totals?.total) }}</span>
+                                <span class="order-chevron">▼</span>
+                            </div>
+                        </div>
+
+                        <!-- Expanded body -->
+                        <div class="order-card-body">
+                            <div class="order-body-grid">
+
+                                <!-- Items -->
+                                <div>
+                                    <div class="order-body-section-label">Items Ordered</div>
+                                    <div v-for="item in order.items" :key="item.id" class="order-item-row">
+                                        <div>
+                                            <div class="order-item-name">{{ item.name }}</div>
+                                            <div class="order-item-meta">{{ item.size }} × {{ item.qty }}</div>
+                                        </div>
+                                        <div class="order-item-price">R{{ formatNum(item.lineTotal) }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Delivery & totals -->
+                                <div>
+                                    <div class="order-body-section-label">Delivery / Collection</div>
+                                    <div class="order-detail-block" style="margin-bottom:14px;">
+                                        <strong>{{ order.delivery?.label || '—' }}</strong><br>
+                                        {{ order.delivery?.address || '' }}
+                                    </div>
+
+                                    <div v-if="order.fitment?.requested" style="margin-bottom:14px;">
+                                        <div class="order-body-section-label">Fitment Appointment</div>
+                                        <div class="order-detail-block" style="border-left-color: var(--twt-red);">
+                                            Rondebosch Centre<br>
+                                            {{ order.fitment?.date }} · {{ order.fitment?.slot }}
+                                        </div>
+                                    </div>
+
+                                    <div class="order-body-section-label">Order Totals</div>
+                                    <table class="order-totals-table">
+                                        <tr><td style="color:var(--text-muted);">Subtotal</td><td>R{{ formatNum(order.totals?.subtotal) }}</td></tr>
+                                        <tr v-if="order.totals?.fitment"><td style="color:var(--text-muted);">Fitment</td><td>R{{ formatNum(order.totals?.fitment) }}</td></tr>
+                                        <tr v-if="order.totals?.discount"><td style="color:#15803d;">Discount</td><td style="color:#15803d;">−R{{ formatNum(order.totals?.discount) }}</td></tr>
+                                        <tr><td style="color:var(--text-muted);">VAT (15%)</td><td>R{{ formatNum(order.totals?.vat) }}</td></tr>
+                                        <tr class="total-row"><td>Total</td><td>R{{ formatNum(order.totals?.total) }}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                                For queries about this order, contact us at
+                                <a href="Contactus.html" style="color:var(--twt-red);">our contact page</a>
+                                and quote ref <strong>{{ order.ref }}</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══════════ ADMIN DASHBOARD ══════════ -->
+    <div v-else-if="role === 'admin'" class="page-container">
+
+        <!-- Admin header -->
+        <div class="dashboard-header" style="margin-bottom: 30px;">
+            <div class="user-greeting">
+                <div class="avatar avatar-admin">⚙</div>
+                <div>
+                    <div class="greeting-name">{{ user.displayName }} <span class="role-badge">Admin</span></div>
+                    <div class="greeting-email">{{ user.email }}</div>
+                </div>
+            </div>
+            <div class="dashboard-action-bar">
+                <a href="Store.html" class="btn-action btn-red" style="font-size: 0.9rem; padding: 10px 20px;">View Store</a>
+                <button @click="logout" class="btn-outline">Sign Out</button>
+            </div>
+        </div>
+
+        <!-- Stat cards -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:16px; margin-bottom:28px;">
+            <div class="card" style="padding:20px; text-align:center;">
+                <div style="font-family:var(--font-display); font-size:2.4rem; color:var(--twt-red);">{{ allOrders.length }}</div>
+                <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Total Orders</div>
+            </div>
+            <div class="card" style="padding:20px; text-align:center;">
+                <div style="font-family:var(--font-display); font-size:2.4rem; color:var(--twt-red);">{{ pendingCount }}</div>
+                <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Pending</div>
+            </div>
+            <div class="card" style="padding:20px; text-align:center;">
+                <div style="font-family:var(--font-display); font-size:2.4rem; color:var(--twt-red);">R{{ formatNum(totalRevenue) }}</div>
+                <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Total Revenue</div>
+            </div>
+            <div class="card" style="padding:20px; text-align:center;">
+                <div style="font-family:var(--font-display); font-size:2.4rem; color:var(--twt-red);">{{ tires.length }}</div>
+                <div style="font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Stock Lines</div>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+
+            <!-- ── Add Tyre + Users ── -->
+            <div class="card">
+                <span class="card-label">Inventory Management</span>
+                <div class="card-title">ADD TYRE</div>
+
+                <div class="form-group">
+                    <label class="form-label">Tyre Brand</label>
+                    <input class="form-input" v-model="newTire.name" placeholder="e.g. MICHELIN">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rim Size</label>
+                    <select class="form-select" v-model="newTire.size">
+                        <option value="" disabled>Select Size</option>
+                        <option value="155/70R13">155/70R13</option><option value="155/80R13">155/80R13</option>
+                        <option value="165/65R13">165/65R13</option><option value="165/70R13">165/70R13</option>
+                        <option value="175/70R13">175/70R13</option><option value="185/70R13">185/70R13</option>
+                        <option value="165/65R14">165/65R14</option><option value="175/65R14">175/65R14</option>
+                        <option value="175/70R14">175/70R14</option><option value="185/60R14">185/60R14</option>
+                        <option value="185/65R14">185/65R14</option><option value="185/70R14">185/70R14</option>
+                        <option value="195/70R14">195/70R14</option><option value="205/75R14">205/75R14</option>
+                        <option value="185/60R15">185/60R15</option><option value="185/65R15">185/65R15</option>
+                        <option value="195/60R15">195/60R15</option><option value="195/65R15">195/65R15</option>
+                        <option value="205/60R15">205/60R15</option><option value="205/65R15">205/65R15</option>
+                        <option value="205/70R15">205/70R15</option><option value="215/70R15">215/70R15</option>
+                        <option value="235/75R15">235/75R15</option>
+                        <option value="205/55R16">205/55R16</option><option value="205/60R16">205/60R16</option>
+                        <option value="215/55R16">215/55R16</option><option value="215/60R16">215/60R16</option>
+                        <option value="215/65R16">215/65R16</option><option value="215/70R16">215/70R16</option>
+                        <option value="225/60R16">225/60R16</option><option value="235/70R16">235/70R16</option>
+                        <option value="215/45R17">215/45R17</option><option value="215/50R17">215/50R17</option>
+                        <option value="215/55R17">215/55R17</option><option value="225/45R17">225/45R17</option>
+                        <option value="225/50R17">225/50R17</option><option value="225/55R17">225/55R17</option>
+                        <option value="225/60R17">225/60R17</option><option value="225/65R17">225/65R17</option>
+                        <option value="235/65R17">235/65R17</option><option value="245/65R17">245/65R17</option>
+                        <option value="225/40R18">225/40R18</option><option value="225/45R18">225/45R18</option>
+                        <option value="235/40R18">235/40R18</option><option value="235/45R18">235/45R18</option>
+                        <option value="235/50R18">235/50R18</option><option value="235/60R18">235/60R18</option>
+                        <option value="245/40R18">245/40R18</option><option value="245/45R18">245/45R18</option>
+                        <option value="255/55R18">255/55R18</option><option value="265/60R18">265/60R18</option>
+                        <option value="235/35R19">235/35R19</option><option value="235/55R19">235/55R19</option>
+                        <option value="245/40R19">245/40R19</option><option value="245/45R19">245/45R19</option>
+                        <option value="255/35R19">255/35R19</option><option value="255/40R19">255/40R19</option>
+                        <option value="255/50R19">255/50R19</option><option value="275/40R19">275/40R19</option>
+                        <option value="245/35R20">245/35R20</option><option value="245/45R20">245/45R20</option>
+                        <option value="255/35R20">255/35R20</option><option value="255/45R20">255/45R20</option>
+                        <option value="255/50R20">255/50R20</option><option value="265/50R20">265/50R20</option>
+                        <option value="275/40R20">275/40R20</option><option value="275/45R20">275/45R20</option>
+                        <option value="275/55R20">275/55R20</option><option value="285/30R20">285/30R20</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unit Price (R)</label>
+                    <input class="form-input" v-model="newTire.price" type="number" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Performance Profile</label>
+                    <input class="form-input" v-model="newTire.description" placeholder="e.g. All-season, low rolling resistance">
+                </div>
+                <button @click="addTire" class="btn-action btn-red" style="width: 100%;" :disabled="isAdding">
+                    {{ isAdding ? 'Adding...' : 'Add to Inventory' }}
+                </button>
+
+                <div class="users-section">
+                    <div class="users-section-title">
+                        REGISTERED USERS <span class="users-count">({{ users.length }})</span>
+                    </div>
+                    <div v-if="users.length === 0" class="users-empty">No users registered yet.</div>
+                    <div v-for="u in users" :key="u.uid" class="user-row">
+                        <div class="user-info">
+                            <div class="user-name">{{ u.displayName || 'Unknown' }} <span class="role-badge" :class="u.role">{{ u.role }}</span></div>
+                            <div class="user-email">{{ u.email }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Inventory ── -->
+            <div class="card">
+                <span class="card-label">Active Listings</span>
+                <div class="card-title">INVENTORY <span class="inventory-title">({{ tires.length }})</span></div>
+                <div class="inventory-list">
+                    <div v-if="tires.length === 0" class="inventory-empty">No inventory data. Add your first tyre on the left.</div>
+                    <div v-for="tire in tires" :key="tire.id" class="item-row">
+                        <div>
+                            <div class="item-name">{{ tire.name }}</div>
+                            <div class="item-size">{{ tire.size }} — {{ tire.description }}</div>
+                            <div class="item-price">R{{ tire.price }}</div>
+                        </div>
+                        <button @click="deleteTire(tire.id)" class="btn-remove">✕ Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ALL ORDERS PANEL ── -->
+        <div class="card admin-orders-section">
+            <span class="card-label">Order Management</span>
+            <div class="card-title" style="margin-bottom:16px;">
+                ALL ORDERS
+                <span class="admin-orders-count" style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); margin-left:10px;">
+                    {{ ordersLoading ? 'loading…' : filteredOrders.length + ' / ' + allOrders.length }}
+                </span>
+            </div>
+
+            <!-- Filters -->
+            <div class="admin-order-filters">
+                <input class="filter-search" v-model="orderSearch"
+                       placeholder="Search by name, email or ref…">
+                <select class="filter-select" v-model="orderStatusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="complete">Complete</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <select class="filter-select" v-model="orderSort">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="highest">Highest Value</option>
+                    <option value="lowest">Lowest Value</option>
+                </select>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="ordersLoading" class="orders-loading">
+                <div class="spinner" style="display:inline-block; margin-right:8px;"></div>
+                Loading all orders…
+            </div>
+
+            <!-- Table -->
+            <div v-else-if="filteredOrders.length === 0" class="orders-empty">
+                <div class="orders-empty-icon">📋</div>
+                <div class="orders-empty-title">NO ORDERS FOUND</div>
+                <p class="orders-empty-sub">No orders match your current filters.</p>
+            </div>
+
+            <div v-else>
+                <div class="admin-order-header">
+                    <div>REF</div>
+                    <div>CUSTOMER</div>
+                    <div>DATE</div>
+                    <div>STATUS</div>
+                    <div>TOTAL</div>
+                    <div>ITEMS</div>
+                </div>
+                <div v-for="order in filteredOrders" :key="order._docPath"
+                     class="admin-order-row"
+                     @click="openOrderModal(order)">
+                    <div class="admin-order-ref">{{ order.ref }}</div>
+                    <div>
+                        <div class="admin-order-customer">{{ order.customer?.name || '—' }}</div>
+                        <div class="admin-order-email">{{ order.customer?.email || order._email }}</div>
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--text-muted);">{{ formatDate(order.placedAt) }}</div>
+                    <div @click.stop>
+                        <select class="status-select"
+                                :class="order.status || 'pending'"
+                                :value="order.status || 'pending'"
+                                @change="updateOrderStatus(order, $event.target.value)">
+                            <option value="pending">Pending</option>
+                            <option value="complete">Complete</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="admin-order-total">R{{ formatNum(order.totals?.total) }}</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted);">{{ order.items?.length || 0 }} tyre{{ order.items?.length !== 1 ? 's' : '' }}</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /admin -->
+
+    <div class="toast" :class="{ show: toastVisible }">{{ toastMsg }}</div>
+
+    <!-- ── Admin Order Detail Modal ── -->
+    <div class="order-modal-overlay" :class="{ show: !!selectedOrder }" @click.self="selectedOrder = null">
+        <div class="order-modal" v-if="selectedOrder">
+            <div class="order-modal-header">
+                <div>
+                    <div style="font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--twt-red); margin-bottom:4px;">Order Detail</div>
+                    <div class="order-modal-title">{{ selectedOrder.ref }}</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">{{ formatDate(selectedOrder.placedAt) }}</div>
+                </div>
+                <button class="order-modal-close" @click="selectedOrder = null">×</button>
+            </div>
+            <div class="order-modal-body">
+
+                <div class="order-modal-grid" style="margin-bottom:20px;">
+                    <div class="order-modal-section">
+                        <div class="order-modal-label">Customer</div>
+                        <div class="order-modal-detail">
+                            <strong>{{ selectedOrder.customer?.name }}</strong><br>
+                            {{ selectedOrder.customer?.email }}<br>
+                            {{ selectedOrder.customer?.phone }}<br>
+                            <span v-if="selectedOrder.customer?.vehicle">{{ selectedOrder.customer?.vehicle }}</span>
+                        </div>
+                    </div>
+                    <div class="order-modal-section">
+                        <div class="order-modal-label">Delivery / Collection</div>
+                        <div class="order-modal-detail">
+                            <strong>{{ selectedOrder.delivery?.label }}</strong><br>
+                            {{ selectedOrder.delivery?.address }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-modal-section" v-if="selectedOrder.fitment?.requested">
+                    <div class="order-modal-label">Fitment Appointment</div>
+                    <div class="order-modal-detail" style="border-left:3px solid var(--twt-red);">
+                        <strong>Rondebosch Fitment Centre</strong><br>
+                        {{ selectedOrder.fitment?.date }} · {{ selectedOrder.fitment?.slot }}
+                    </div>
+                </div>
+
+                <div class="order-modal-section">
+                    <div class="order-modal-label">Items Ordered</div>
+                    <div v-for="item in selectedOrder.items" :key="item.id" class="order-item-row" style="border-bottom:1px solid #f0f0f0; padding:8px 0; font-size:0.84rem; display:flex; justify-content:space-between;">
+                        <div>
+                            <strong>{{ item.name }}</strong> {{ item.size }}<br>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">Qty {{ item.qty }} × R{{ formatNum(item.unitPrice) }}</span>
+                        </div>
+                        <div style="font-family:var(--font-mono); font-weight:700;">R{{ formatNum(item.lineTotal) }}</div>
+                    </div>
+                </div>
+
+                <div class="order-modal-section">
+                    <div class="order-modal-label">Totals</div>
+                    <table class="order-totals-table">
+                        <tr><td style="color:var(--text-muted);">Subtotal</td><td>R{{ formatNum(selectedOrder.totals?.subtotal) }}</td></tr>
+                        <tr v-if="selectedOrder.totals?.fitment"><td style="color:var(--text-muted);">Fitment</td><td>R{{ formatNum(selectedOrder.totals?.fitment) }}</td></tr>
+                        <tr v-if="selectedOrder.totals?.discount"><td style="color:#15803d;">Discount</td><td style="color:#15803d;">−R{{ formatNum(selectedOrder.totals?.discount) }}</td></tr>
+                        <tr><td style="color:var(--text-muted);">VAT (15%)</td><td>R{{ formatNum(selectedOrder.totals?.vat) }}</td></tr>
+                        <tr class="total-row"><td>TOTAL</td><td>R{{ formatNum(selectedOrder.totals?.total) }}</td></tr>
+                    </table>
+                </div>
+
+                <div class="order-modal-section" v-if="selectedOrder.customer?.notes">
+                    <div class="order-modal-label">Customer Notes</div>
+                    <div class="order-modal-detail">{{ selectedOrder.customer?.notes }}</div>
+                </div>
+
+                <div style="margin-top:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div style="font-size:0.78rem; color:var(--text-muted);">Update status:</div>
+                    <select class="status-select"
+                            :class="selectedOrder.status || 'pending'"
+                            :value="selectedOrder.status || 'pending'"
+                            @change="updateOrderStatus(selectedOrder, $event.target.value); selectedOrder = {...selectedOrder, status: $event.target.value}">
+                        <option value="pending">Pending</option>
+                        <option value="complete">Complete</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <button @click="selectedOrder = null" class="btn-outline" style="margin-left:auto;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /#app -->
+
+<script type="module">
+    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+        from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import {
+        collection, addDoc, getDocs, deleteDoc,
+        doc, setDoc, getDoc, collectionGroup,
+        query, orderBy, updateDoc
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    import { auth, db } from './Backend/Firebase.js';
+
+    createApp({
+        data() {
+            return {
+                user       : null,
+                role       : 'customer',
+                joinDate   : '',
+                tires      : [],
+                users      : [],
+                newTire    : { name: '', description: '', price: '', size: '' },
+                isLoading  : false,
+                isAdding   : false,
+                loginError : '',
+                toastVisible: false,
+                toastMsg   : '',
+
+                // Customer orders
+                orders        : [],
+                ordersLoading : false,
+
+                // Admin orders
+                allOrders         : [],
+                orderSearch       : '',
+                orderStatusFilter : '',
+                orderSort         : 'newest',
+                selectedOrder     : null,
+            };
+        },
+
+        computed: {
+            userInitial() {
+                return this.user?.displayName?.[0]?.toUpperCase() || '?';
+            },
+            pendingCount() {
+                return this.allOrders.filter(o => (o.status || 'pending') === 'pending').length;
+            },
+            totalRevenue() {
+                return this.allOrders
+                    .filter(o => o.status !== 'cancelled')
+                    .reduce((s, o) => s + (o.totals?.total || 0), 0);
+            },
+            filteredOrders() {
+                let list = [...this.allOrders];
+                // Search
+                if (this.orderSearch.trim()) {
+                    const q = this.orderSearch.trim().toLowerCase();
+                    list = list.filter(o =>
+                        (o.ref || '').toLowerCase().includes(q) ||
+                        (o.customer?.name || '').toLowerCase().includes(q) ||
+                        (o.customer?.email || '').toLowerCase().includes(q) ||
+                        (o._email || '').toLowerCase().includes(q)
+                    );
+                }
+                // Status filter
+                if (this.orderStatusFilter) {
+                    list = list.filter(o => (o.status || 'pending') === this.orderStatusFilter);
+                }
+                // Sort
+                list.sort((a, b) => {
+                    const at = a.placedAt?.toDate?.() || new Date(0);
+                    const bt = b.placedAt?.toDate?.() || new Date(0);
+                    if (this.orderSort === 'newest')  return bt - at;
+                    if (this.orderSort === 'oldest')  return at - bt;
+                    if (this.orderSort === 'highest') return (b.totals?.total || 0) - (a.totals?.total || 0);
+                    if (this.orderSort === 'lowest')  return (a.totals?.total || 0) - (b.totals?.total || 0);
+                    return 0;
+                });
+                return list;
+            }
+        },
+
+        methods: {
+            showToast(msg) {
+                this.toastMsg = msg;
+                this.toastVisible = true;
+                setTimeout(() => { this.toastVisible = false; }, 3000);
+            },
+
+            formatNum(n) {
+                return Number(n || 0).toLocaleString('en-ZA');
+            },
+
+            formatDate(ts) {
+                if (!ts) return '—';
+                const d = ts.toDate ? ts.toDate() : new Date(ts);
+                return d.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' });
+            },
+
+            scrollToOrders() {
+                const el = document.getElementById('order-history');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+
+            /* ── AUTH ── */
+            async loginWithGoogle() {
+                this.isLoading = true;
+                this.loginError = '';
+                try {
+                    const result = await signInWithPopup(auth, new GoogleAuthProvider());
+                    const user = result.user;
+                    const userRef = doc(db, "Users", user.uid);
+                    const existingDoc = await getDoc(userRef);
+                    const existingRole = existingDoc.exists() ? existingDoc.data().role : 'customer';
+                    const isAdmin   = user.email === "theguys5611@gmail.com";
+                    const userRole  = isAdmin ? "admin" : existingRole;
+                    const isNewUser = !existingDoc.exists();
+                    await setDoc(userRef, {
+                        displayName : user.displayName,
+                        email       : user.email,
+                        role        : userRole,
+                        lastLogin   : new Date(),
+                        ...(isNewUser && { createdAt: new Date() })
+                    }, { merge: true });
+                    if (isNewUser) this.showToast(`Welcome to Faiq's Tyres, ${user.displayName}! Your account has been created.`);
+                } catch (error) {
+                    this.loginError = error.message.includes('popup-closed')
+                        ? 'Sign-in was cancelled. Please try again.'
+                        : 'Sign-in failed. Please try again.';
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+
+            async logout() {
+                await signOut(auth);
+                this.user = null; this.role = 'customer';
+                this.tires = []; this.users = [];
+                this.orders = []; this.allOrders = [];
+            },
+
+            /* ── INVENTORY ── */
+            async addTire() {
+                if (!this.newTire.name || !this.newTire.price) return this.showToast('Brand and price are required.');
+                this.isAdding = true;
+                try {
+                    await addDoc(collection(db, "Tires"), { ...this.newTire, price: Number(this.newTire.price) });
+                    this.newTire = { name: '', description: '', price: '', size: '' };
+                    await this.fetchTires();
+                    this.showToast('Tyre added to inventory.');
+                } catch (e) { this.showToast('Error: ' + e.message); }
+                finally { this.isAdding = false; }
+            },
+
+            async deleteTire(id) {
+                if (!confirm("Permanently remove this listing?")) return;
+                await deleteDoc(doc(db, "Tires", id));
+                await this.fetchTires();
+                this.showToast('Tyre removed.');
+            },
+
+            async fetchTires() {
+                const snap = await getDocs(collection(db, "Tires"));
+                this.tires = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            },
+
+            async fetchUsers() {
+                const snap = await getDocs(collection(db, "Users"));
+                this.users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+            },
+
+            /* ── CUSTOMER ORDERS ── */
+            async fetchMyOrders(email) {
+                this.ordersLoading = true;
+                try {
+                    // Orders live at OrderHistory/{email}/orders/{ref}
+                    const snap = await getDocs(
+                        query(collection(db, 'OrderHistory', email, 'orders'),
+                              orderBy('placedAt', 'desc'))
+                    );
+                    this.orders = snap.docs.map(d => ({
+                        ...d.data(),
+                        _expanded: false,
+                        _ref: d.ref
+                    }));
+                } catch (e) {
+                    console.error('Error fetching orders:', e);
+                    this.orders = [];
+                } finally {
+                    this.ordersLoading = false;
+                }
+            },
+
+            /* ── ADMIN: ALL ORDERS ── */
+            async fetchAllOrders() {
+                this.ordersLoading = true;
+                try {
+                    // collectionGroup queries across ALL users' orders subcollections
+                    const snap = await getDocs(
+                        query(collectionGroup(db, 'orders'), orderBy('placedAt', 'desc'))
+                    );
+                    this.allOrders = snap.docs.map(d => {
+                        // Extract the email from the path: OrderHistory/{email}/orders/{ref}
+                        const pathParts = d.ref.path.split('/');
+                        const email = pathParts[1]; // index 1 is the email segment
+                        return {
+                            ...d.data(),
+                            _docPath : d.ref.path,
+                            _docRef  : d.ref,
+                            _email   : email,
+                        };
+                    });
+                } catch (e) {
+                    console.error('Error fetching all orders:', e);
+                    this.allOrders = [];
+                } finally {
+                    this.ordersLoading = false;
+                }
+            },
+
+            /* ── ADMIN: UPDATE ORDER STATUS ── */
+            async updateOrderStatus(order, newStatus) {
+                try {
+                    const ref = order._docRef || order._ref;
+                    if (!ref) return;
+                    await updateDoc(ref, { status: newStatus });
+                    // Update locally
+                    order.status = newStatus;
+                    this.showToast(`Order ${order.ref} marked as ${newStatus}.`);
+                } catch (e) {
+                    this.showToast('Error updating status: ' + e.message);
+                }
+            },
+
+            openOrderModal(order) {
+                this.selectedOrder = order;
+            },
+        },
+
+        mounted() {
+            onAuthStateChanged(auth, async (user) => {
+                this.user = user;
+                if (user) {
+                    const userDoc = await getDoc(doc(db, "Users", user.uid));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        this.role = data.role || 'customer';
+                        if (data.createdAt?.toDate) {
+                            this.joinDate = data.createdAt.toDate().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long' });
+                        }
+                    }
+                    if (this.role === 'admin') {
+                        await this.fetchTires();
+                        await this.fetchUsers();
+                        await this.fetchAllOrders();
+                    } else {
+                        // Customer — load their orders by email
+                        await this.fetchMyOrders(user.email);
+                    }
+                }
+            });
+
+            // Close admin modal on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') this.selectedOrder = null;
+            });
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
