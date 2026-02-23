@@ -502,13 +502,10 @@
 
     const auth = getAuth();
 
-    // ── API base URL ──────────────────────────────────────────────────────────
-    // In production (Render), the frontend is served by the same Express server,
-    // so API calls are relative (no host needed). In local dev with Live Server
-    // on port 5500, we need to point to localhost:3000.
+    
     const API_BASE = (window.location.port === '5500' || window.location.port === '5501')
         ? 'http://localhost:3000'
-        : '';  // empty string = same origin (works on Render)
+        : '';  // 
 
     createApp({
         data() {
@@ -597,12 +594,7 @@
                 this.tires = q.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             },
 
-            /**
-             * Returns the correct image URL for a tyre.
-             * Priority:
-             *   1. imageurl field saved directly on the Firestore document
-             *   2. Brand fallback — matches the tyre's name against known brands
-             *   3. null → caller shows the 🛞 placeholder
+            
              */
             getTireImage(tire) {
                 if (!tire) return null;
@@ -771,7 +763,6 @@
                 }
             },
 
-            // ─────────────────────────────────────────────────────────────────
 
             extractBudget(query) {
                 const match = query.match(/(?:under|below|max|budget|less than|no more than)?\s*R?\s*(\d+)/i);
