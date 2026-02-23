@@ -107,7 +107,7 @@
 
         /* Scrollable body */
         .an-body { flex: 1; overflow-y: auto; overflow-x: hidden; }
-        .an-wrap { max-width: 1300px; margin: 0 auto; padding: 24px 20px 60px; }
+        .an-wrap { max-width: 1300px; margin: 0 auto; padding: 14px 20px 30px; }
 
         /* TOPBAR */
         .an-topbar {
@@ -159,11 +159,11 @@
         /* SECTION HEADER */
         .an-section-hdr {
             display: flex; align-items: flex-end; justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .an-section-title {
             font-family: var(--font-display);
-            font-size: clamp(2rem, 4vw, 3rem);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
             color: var(--twt-red); line-height: 1;
         }
         .an-section-title span { color: var(--twt-dark); }
@@ -180,13 +180,13 @@
         @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
 
         /* KPI CARDS */
-        .an-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .an-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
         @media (max-width: 900px) { .an-kpi-grid { grid-template-columns: repeat(2,1fr); } }
 
         .an-kpi {
             background: white; border: 1px solid var(--border);
-            border-top: 4px solid var(--twt-red);
-            padding: 20px 22px; position: relative; overflow: hidden;
+            border-top: 3px solid var(--twt-red);
+            padding: 12px 14px; position: relative; overflow: hidden;
             transition: box-shadow 0.2s; box-shadow: var(--shadow);
         }
         .an-kpi:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.12); }
@@ -196,14 +196,14 @@
             display: block;
         }
         .an-kpi-value {
-            font-family: var(--font-display); font-size: 2.2rem;
+            font-family: var(--font-display); font-size: 1.8rem;
             color: var(--twt-dark); line-height: 1;
         }
         .an-kpi-value.red { color: var(--twt-red); }
         .an-kpi-value.green { color: #198754; }
         .an-kpi-value.amber { color: #d97706; }
         .an-kpi-delta {
-            font-family: var(--font-mono); font-size: 0.65rem; margin-top: 6px;
+            font-family: var(--font-mono); font-size: 0.62rem; margin-top: 3px;
         }
         .an-kpi-delta.up { color: #198754; }
         .an-kpi-delta.down { color: var(--twt-red); }
@@ -211,27 +211,27 @@
         .an-kpi-icon { position: absolute; top: 14px; right: 14px; font-size: 1.3rem; opacity: 0.08; }
 
         /* CHART CARDS */
-        .an-chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .an-chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .an-chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .an-chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         @media (max-width: 1000px) { .an-chart-grid-2, .an-chart-grid-3 { grid-template-columns: 1fr; } }
-        .an-chart-full { margin-bottom: 16px; }
+        .an-chart-full { margin-bottom: 10px; }
 
         .an-card {
             background: white; border: 1px solid var(--border);
-            padding: 24px; box-shadow: var(--shadow);
-            border-top: 4px solid var(--twt-red);
+            padding: 12px 14px; box-shadow: var(--shadow);
+            border-top: 3px solid var(--twt-red);
         }
         .an-card-title {
             font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
-            color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 16px;
+            color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 8px;
             display: block;
         }
         .an-card canvas { width: 100% !important; }
 
         /* LEADERBOARD */
         .an-leaderboard-row {
-            display: flex; align-items: center; gap: 14px;
-            padding: 10px 0; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 0; border-bottom: 1px solid var(--border);
         }
         .an-leaderboard-row:last-child { border-bottom: none; }
         .an-lb-rank {
@@ -256,11 +256,11 @@
         .an-ai-card {
             background: white; border: 1px solid var(--border);
             border-left: 4px solid var(--twt-red);
-            padding: 24px; margin-bottom: 16px;
+            padding: 12px 14px; margin-bottom: 10px;
             box-shadow: var(--shadow);
         }
         .an-ai-header {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
         }
         .an-ai-badge {
             font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
@@ -271,7 +271,7 @@
             font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted);
         }
         .an-ai-body {
-            font-size: 0.875rem; color: var(--text-main); line-height: 1.7; min-height: 48px;
+            font-size: 0.82rem; color: var(--text-main); line-height: 1.6; min-height: 36px;
         }
         .an-ai-body.loading { color: var(--text-muted); animation: ai-pulse 1.5s infinite; }
         @keyframes ai-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -336,7 +336,7 @@
         }
 
         /* PROGRESS BARS */
-        .an-prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .an-prog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .an-prog-label { color: var(--text-muted); min-width: 80px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .an-prog-bar-bg { flex: 1; height: 5px; background: var(--bg-light); }
         .an-prog-bar-fill { height: 100%; background: var(--twt-red); transition: width 1.2s ease; }
@@ -349,11 +349,11 @@
         .an-tl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         @media (max-width: 800px) { .an-tl-grid { grid-template-columns: 1fr; } }
         .an-tl-stat {
-            text-align: center; padding: 18px;
+            text-align: center; padding: 10px;
             border: 1px solid var(--border); background: var(--bg-light);
         }
         .an-tl-val {
-            font-family: var(--font-display); font-size: 2rem; color: var(--twt-red);
+            font-family: var(--font-display); font-size: 1.6rem; color: var(--twt-red);
         }
         .an-tl-lbl {
             font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
@@ -888,12 +888,12 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Revenue vs Cost vs Profit — Monthly</div>
-                    <canvas id="chart-monthly-fin" height="220"></canvas>
+                    <canvas id="chart-monthly-fin" height="140"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Revenue Breakdown by Status</div>
                     <div class="an-donut-wrap">
-                        <canvas id="chart-status-donut" class="an-donut-canvas" width="160" height="160"></canvas>
+                        <canvas id="chart-status-donut" class="an-donut-canvas" width="120" height="120"></canvas>
                         <div class="an-donut-legend" id="donut-legend-status"></div>
                     </div>
                 </div>
@@ -903,11 +903,11 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Fitment Revenue Contribution</div>
-                    <canvas id="chart-fitment" height="180"></canvas>
+                    <canvas id="chart-fitment" height="130"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Discount Impact on Revenue</div>
-                    <canvas id="chart-discounts" height="180"></canvas>
+                    <canvas id="chart-discounts" height="130"></canvas>
                 </div>
             </div>
 
@@ -983,12 +983,12 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Top 10 Best-Selling Tyres by Revenue</div>
-                    <canvas id="chart-topsellers" height="280"></canvas>
+                    <canvas id="chart-topsellers" height="150"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Sales by Rim Size Category</div>
                     <div class="an-donut-wrap">
-                        <canvas id="chart-rim-donut" class="an-donut-canvas" width="160" height="160"></canvas>
+                        <canvas id="chart-rim-donut" class="an-donut-canvas" width="120" height="120"></canvas>
                         <div class="an-donut-legend" id="donut-legend-rim"></div>
                     </div>
                 </div>
@@ -996,7 +996,7 @@
 
             <div class="an-chart-full an-card">
                 <div class="an-card-title">Brand Performance — Units vs Revenue</div>
-                <canvas id="chart-brands" height="200"></canvas>
+                <canvas id="chart-brands" height="130"></canvas>
             </div>
 
             <!-- Inventory coverage -->
@@ -1064,12 +1064,12 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Customer Acquisition — Monthly</div>
-                    <canvas id="chart-acquisition" height="220"></canvas>
+                    <canvas id="chart-acquisition" height="140"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Delivery vs Collection Split</div>
                     <div class="an-donut-wrap">
-                        <canvas id="chart-delivery-donut" class="an-donut-canvas" width="160" height="160"></canvas>
+                        <canvas id="chart-delivery-donut" class="an-donut-canvas" width="120" height="120"></canvas>
                         <div class="an-donut-legend" id="donut-legend-delivery"></div>
                     </div>
                 </div>
@@ -1077,7 +1077,7 @@
 
             <div class="an-chart-full an-card">
                 <div class="an-card-title">Order Value Distribution — Spend Segments</div>
-                <canvas id="chart-spend-dist" height="180"></canvas>
+                <canvas id="chart-spend-dist" height="130"></canvas>
             </div>
 
             <!-- Top Buyers leaderboard -->
