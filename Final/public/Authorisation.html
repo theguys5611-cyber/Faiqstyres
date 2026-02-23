@@ -102,23 +102,23 @@
             overflow: hidden;
             font-family: var(--font-body);
             flex-direction: column;
+            height: 100vh;
         }
         #analytics-overlay.visible { display: flex; }
 
-        /* Scrollable body */
-        .an-body { flex: 1; overflow-y: auto; overflow-x: hidden; }
-        .an-wrap { max-width: 1300px; margin: 0 auto; padding: 14px 20px 30px; }
+        /* No-scroll body — fills remaining height */
+        .an-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+        .an-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 10px 16px 10px; overflow: hidden; }
 
         /* TOPBAR */
         .an-topbar {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 5%; border-bottom: 1px solid var(--border);
+            padding: 8px 16px; border-bottom: 1px solid var(--border);
             background: white; flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .an-topbar-logo {
             font-family: var(--font-display);
-            font-size: 1.6rem; color: var(--twt-red);
+            font-size: 1.2rem; color: var(--twt-red);
             letter-spacing: 1px;
         }
         .an-topbar-logo span { color: var(--twt-dark); }
@@ -138,13 +138,13 @@
         /* REPORT TABS */
         .an-tabs {
             display: flex; gap: 0; flex-shrink: 0;
-            background: white; padding: 0 5%;
+            background: white; padding: 0 16px;
             border-bottom: 1px solid var(--border);
         }
         .an-tab {
-            font-family: var(--font-body); font-size: 0.75rem; font-weight: 700;
+            font-family: var(--font-body); font-size: 0.7rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 1px;
-            padding: 12px 24px; cursor: pointer; color: var(--text-muted);
+            padding: 7px 18px; cursor: pointer; color: var(--text-muted);
             border-bottom: 3px solid transparent; margin-bottom: -1px;
             transition: all 0.2s; background: none;
             border-top: none; border-left: none; border-right: none;
@@ -153,17 +153,18 @@
         .an-tab.active { color: var(--twt-red); border-bottom-color: var(--twt-red); }
 
         /* REPORT PANELS */
-        .an-panel { display: none; }
-        .an-panel.active { display: block; }
+        .an-panel { display: none; flex: 1; min-height: 0; overflow: hidden; }
+        .an-panel.active { display: flex; flex-direction: column; }
+        .an-panel-inner { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
 
         /* SECTION HEADER */
         .an-section-hdr {
             display: flex; align-items: flex-end; justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 6px; flex-shrink: 0;
         }
         .an-section-title {
             font-family: var(--font-display);
-            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-size: 1.4rem;
             color: var(--twt-red); line-height: 1;
         }
         .an-section-title span { color: var(--twt-dark); }
@@ -180,30 +181,30 @@
         @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
 
         /* KPI CARDS */
-        .an-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+        .an-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex-shrink: 0; }
         @media (max-width: 900px) { .an-kpi-grid { grid-template-columns: repeat(2,1fr); } }
 
         .an-kpi {
             background: white; border: 1px solid var(--border);
             border-top: 3px solid var(--twt-red);
-            padding: 12px 14px; position: relative; overflow: hidden;
-            transition: box-shadow 0.2s; box-shadow: var(--shadow);
+            padding: 8px 12px; position: relative; overflow: hidden;
+            transition: box-shadow 0.2s;
         }
         .an-kpi:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.12); }
         .an-kpi-label {
-            font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px;
+            font-size: 0.6rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 3px;
             display: block;
         }
         .an-kpi-value {
-            font-family: var(--font-display); font-size: 1.8rem;
+            font-family: var(--font-display); font-size: 1.4rem;
             color: var(--twt-dark); line-height: 1;
         }
         .an-kpi-value.red { color: var(--twt-red); }
         .an-kpi-value.green { color: #198754; }
         .an-kpi-value.amber { color: #d97706; }
         .an-kpi-delta {
-            font-family: var(--font-mono); font-size: 0.62rem; margin-top: 3px;
+            font-family: var(--font-mono); font-size: 0.58rem; margin-top: 2px;
         }
         .an-kpi-delta.up { color: #198754; }
         .an-kpi-delta.down { color: var(--twt-red); }
@@ -211,32 +212,34 @@
         .an-kpi-icon { position: absolute; top: 14px; right: 14px; font-size: 1.3rem; opacity: 0.08; }
 
         /* CHART CARDS */
-        .an-chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .an-chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .an-chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; flex: 1; min-height: 0; }
+        .an-chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; flex: 1; min-height: 0; }
         @media (max-width: 1000px) { .an-chart-grid-2, .an-chart-grid-3 { grid-template-columns: 1fr; } }
-        .an-chart-full { margin-bottom: 10px; }
+        .an-chart-full { flex-shrink: 0; }
 
         .an-card {
             background: white; border: 1px solid var(--border);
-            padding: 12px 14px; box-shadow: var(--shadow);
+            padding: 8px 12px;
             border-top: 3px solid var(--twt-red);
+            display: flex; flex-direction: column; min-height: 0; overflow: hidden;
         }
+        .an-card canvas { flex: 1; min-height: 0; width: 100% !important; height: 100% !important; }
         .an-card-title {
             font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
             color: var(--text-muted); letter-spacing: 1.5px; margin-bottom: 8px;
             display: block;
         }
-        .an-card canvas { width: 100% !important; }
+
 
         /* LEADERBOARD */
         .an-leaderboard-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 6px 0; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 0; border-bottom: 1px solid var(--border);
         }
         .an-leaderboard-row:last-child { border-bottom: none; }
         .an-lb-rank {
-            font-family: var(--font-display); font-size: 1.4rem;
-            color: var(--border); width: 28px; flex-shrink: 0;
+            font-family: var(--font-display); font-size: 1rem;
+            color: var(--border); width: 22px; flex-shrink: 0;
         }
         .an-lb-rank.gold { color: #d97706; }
         .an-lb-rank.silver { color: #9e9e9e; }
@@ -256,11 +259,10 @@
         .an-ai-card {
             background: white; border: 1px solid var(--border);
             border-left: 4px solid var(--twt-red);
-            padding: 12px 14px; margin-bottom: 10px;
-            box-shadow: var(--shadow);
+            padding: 6px 10px; flex-shrink: 0;
         }
         .an-ai-header {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
         }
         .an-ai-badge {
             font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
@@ -271,7 +273,7 @@
             font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted);
         }
         .an-ai-body {
-            font-size: 0.82rem; color: var(--text-main); line-height: 1.6; min-height: 36px;
+            font-size: 0.75rem; color: var(--text-main); line-height: 1.4; min-height: 0;
         }
         .an-ai-body.loading { color: var(--text-muted); animation: ai-pulse 1.5s infinite; }
         @keyframes ai-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -320,7 +322,7 @@
 
         /* DONUT LEGEND */
         .an-donut-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-        .an-donut-canvas { flex-shrink: 0; }
+        .an-donut-canvas { flex-shrink: 0; width: 90px !important; height: 90px !important; }
         .an-donut-legend { flex: 1; min-width: 120px; }
         .an-legend-item {
             display: flex; align-items: center; gap: 10px;
@@ -336,7 +338,7 @@
         }
 
         /* PROGRESS BARS */
-        .an-prog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .an-prog-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
         .an-prog-label { color: var(--text-muted); min-width: 80px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .an-prog-bar-bg { flex: 1; height: 5px; background: var(--bg-light); }
         .an-prog-bar-fill { height: 100%; background: var(--twt-red); transition: width 1.2s ease; }
@@ -346,14 +348,14 @@
         }
 
         /* TIMELINE / STAT GRID */
-        .an-tl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .an-tl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         @media (max-width: 800px) { .an-tl-grid { grid-template-columns: 1fr; } }
         .an-tl-stat {
-            text-align: center; padding: 10px;
+            text-align: center; padding: 6px 8px;
             border: 1px solid var(--border); background: var(--bg-light);
         }
         .an-tl-val {
-            font-family: var(--font-display); font-size: 1.6rem; color: var(--twt-red);
+            font-family: var(--font-display); font-size: 1.2rem; color: var(--twt-red);
         }
         .an-tl-lbl {
             font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
@@ -848,259 +850,137 @@
 
         <!-- ════════════ FINANCIAL REPORT ════════════ -->
         <div id="tab-financial" class="an-panel active">
-
+        <div class="an-panel-inner">
             <div class="an-section-hdr">
-                <div>
-                    <div class="an-section-title">FINANCIAL <span>REPORT</span></div>
-                    <div class="an-section-sub"><span class="an-live-dot"></span>Live from Firestore · Updated now</div>
-                </div>
+                <div class="an-section-title">FINANCIAL <span>REPORT</span></div>
+                <div class="an-section-sub"><span class="an-live-dot"></span>Live from Firestore</div>
             </div>
-
-            <!-- KPIs -->
             <div class="an-kpi-grid" id="fin-kpis">
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">💰</div>
-                    <div class="an-kpi-label">Gross Revenue</div>
-                    <div class="an-kpi-value red" id="kpi-revenue">R0</div>
-                    <div class="an-kpi-delta neutral" id="kpi-revenue-d">Calculating…</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">📦</div>
-                    <div class="an-kpi-label">Cost of Sales</div>
-                    <div class="an-kpi-value" id="kpi-cos">R0</div>
-                    <div class="an-kpi-delta neutral" id="kpi-cos-d">Calculating…</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">📈</div>
-                    <div class="an-kpi-label">Gross Profit</div>
-                    <div class="an-kpi-value green" id="kpi-profit">R0</div>
-                    <div class="an-kpi-delta neutral" id="kpi-profit-d">Calculating…</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">🎯</div>
-                    <div class="an-kpi-label">Profit Margin</div>
-                    <div class="an-kpi-value amber" id="kpi-margin">0%</div>
-                    <div class="an-kpi-delta neutral" id="kpi-margin-d">Calculating…</div>
-                </div>
+                <div class="an-kpi"><div class="an-kpi-icon">💰</div><div class="an-kpi-label">Gross Revenue</div><div class="an-kpi-value red" id="kpi-revenue">R0</div><div class="an-kpi-delta neutral" id="kpi-revenue-d">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">📦</div><div class="an-kpi-label">Cost of Sales</div><div class="an-kpi-value" id="kpi-cos">R0</div><div class="an-kpi-delta neutral" id="kpi-cos-d">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">📈</div><div class="an-kpi-label">Gross Profit</div><div class="an-kpi-value green" id="kpi-profit">R0</div><div class="an-kpi-delta neutral" id="kpi-profit-d">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">🎯</div><div class="an-kpi-label">Profit Margin</div><div class="an-kpi-value amber" id="kpi-margin">0%</div><div class="an-kpi-delta neutral" id="kpi-margin-d">—</div></div>
             </div>
-
-            <!-- Charts row 1 -->
             <div class="an-chart-grid-2">
                 <div class="an-card">
-                    <div class="an-card-title">Revenue vs Cost vs Profit — Monthly</div>
-                    <canvas id="chart-monthly-fin" height="90"></canvas>
+                    <span class="an-card-title">Revenue vs Cost vs Profit — Monthly</span>
+                    <canvas id="chart-monthly-fin"></canvas>
                 </div>
                 <div class="an-card">
-                    <div class="an-card-title">Revenue Breakdown by Status</div>
-                    <div class="an-donut-wrap">
-                        <canvas id="chart-status-donut" class="an-donut-canvas" width="90" height="90"></canvas>
+                    <span class="an-card-title">Revenue by Status</span>
+                    <div class="an-donut-wrap" style="flex:1;align-items:center;">
+                        <canvas id="chart-status-donut" class="an-donut-canvas" width="90"></canvas>
                         <div class="an-donut-legend" id="donut-legend-status"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Charts row 2 -->
-            <div class="an-chart-grid-2">
                 <div class="an-card">
-                    <div class="an-card-title">Fitment Revenue Contribution</div>
-                    <canvas id="chart-fitment" height="80"></canvas>
+                    <span class="an-card-title">Fitment Revenue</span>
+                    <canvas id="chart-fitment"></canvas>
                 </div>
                 <div class="an-card">
-                    <div class="an-card-title">Discount Impact on Revenue</div>
-                    <canvas id="chart-discounts" height="80"></canvas>
+                    <span class="an-card-title">Discount Impact</span>
+                    <canvas id="chart-discounts"></canvas>
                 </div>
             </div>
-
-            <!-- VAT summary -->
-            <div class="an-card an-chart-full">
-                <div class="an-card-title">VAT & Tax Summary</div>
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
-                    <div class="an-tl-stat">
-                        <div class="an-tl-val" id="vat-total">R0</div>
-                        <div class="an-tl-lbl">Total VAT Collected</div>
-                    </div>
-                    <div class="an-tl-stat">
-                        <div class="an-tl-val" id="vat-ex">R0</div>
-                        <div class="an-tl-lbl">Revenue ex-VAT</div>
-                    </div>
-                    <div class="an-tl-stat">
-                        <div class="an-tl-val" id="avg-order">R0</div>
-                        <div class="an-tl-lbl">Avg Order Value</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI INSIGHTS -->
             <div class="an-ai-card" id="ai-fin">
                 <div class="an-ai-header">
                     <span class="an-ai-badge">⬡ Gemini AI Insights</span>
-                    <span class="an-ai-model">gemini-2.0-flash · Financial Analysis</span>
+                    <span class="an-ai-model">Financial Analysis</span>
+                    <button class="an-ai-regen" onclick="runFinancialAI()" style="margin-left:auto;">↺ Regenerate</button>
                 </div>
-                <div class="an-ai-body loading" id="ai-fin-body">Analysing financial data with Gemini AI…</div>
-                <button class="an-ai-regen" onclick="runFinancialAI()">↺ Regenerate</button>
+                <div class="an-ai-body loading" id="ai-fin-body">Analysing financial data…</div>
             </div>
+        </div><!-- /an-panel-inner -->
         </div>
 
         <!-- ════════════ PRODUCT REPORT ════════════ -->
         <div id="tab-product" class="an-panel">
-
+        <div class="an-panel-inner">
             <div class="an-section-hdr">
-                <div>
-                    <div class="an-section-title">PRODUCT <span>REPORT</span></div>
-                    <div class="an-section-sub"><span class="an-live-dot"></span>Tyre performance & inventory analytics</div>
-                </div>
+                <div class="an-section-title">PRODUCT <span>REPORT</span></div>
+                <div class="an-section-sub"><span class="an-live-dot"></span>Tyre performance &amp; inventory</div>
             </div>
-
-            <!-- KPIs -->
             <div class="an-kpi-grid">
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">🏆</div>
-                    <div class="an-kpi-label">Best Seller</div>
-                    <div class="an-kpi-value red" id="kpi-bestseller" style="font-size:1.4rem;">—</div>
-                    <div class="an-kpi-delta neutral" id="kpi-bestseller-d">—</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">📏</div>
-                    <div class="an-kpi-label">Most Popular Size</div>
-                    <div class="an-kpi-value" id="kpi-popsize" style="font-size:1.6rem;">—</div>
-                    <div class="an-kpi-delta neutral" id="kpi-popsize-d">—</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">🔢</div>
-                    <div class="an-kpi-label">Units Sold</div>
-                    <div class="an-kpi-value green" id="kpi-units">0</div>
-                    <div class="an-kpi-delta neutral" id="kpi-units-d">Across all orders</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">💵</div>
-                    <div class="an-kpi-label">Avg Unit Price</div>
-                    <div class="an-kpi-value amber" id="kpi-avgprice">R0</div>
-                    <div class="an-kpi-delta neutral">From completed orders</div>
-                </div>
+                <div class="an-kpi"><div class="an-kpi-icon">🏆</div><div class="an-kpi-label">Best Seller</div><div class="an-kpi-value red" id="kpi-bestseller" style="font-size:1.1rem;">—</div><div class="an-kpi-delta neutral" id="kpi-bestseller-d">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">📏</div><div class="an-kpi-label">Top Rim Size</div><div class="an-kpi-value" id="kpi-popsize">—</div><div class="an-kpi-delta neutral" id="kpi-popsize-d">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">🔢</div><div class="an-kpi-label">Units Sold</div><div class="an-kpi-value green" id="kpi-units">0</div><div class="an-kpi-delta neutral">All orders</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">💵</div><div class="an-kpi-label">Avg Unit Price</div><div class="an-kpi-value amber" id="kpi-avgprice">R0</div><div class="an-kpi-delta neutral">Completed</div></div>
             </div>
-
-            <!-- Charts -->
             <div class="an-chart-grid-2">
                 <div class="an-card">
-                    <div class="an-card-title">Top 10 Best-Selling Tyres by Revenue</div>
-                    <canvas id="chart-topsellers" height="90"></canvas>
+                    <span class="an-card-title">Top 10 Best-Selling Tyres by Revenue</span>
+                    <canvas id="chart-topsellers"></canvas>
                 </div>
                 <div class="an-card">
-                    <div class="an-card-title">Sales by Rim Size Category</div>
-                    <div class="an-donut-wrap">
-                        <canvas id="chart-rim-donut" class="an-donut-canvas" width="90" height="90"></canvas>
+                    <span class="an-card-title">Sales by Rim Size</span>
+                    <div class="an-donut-wrap" style="flex:1;align-items:center;">
+                        <canvas id="chart-rim-donut" class="an-donut-canvas" width="90"></canvas>
                         <div class="an-donut-legend" id="donut-legend-rim"></div>
                     </div>
                 </div>
+                <div class="an-card">
+                    <span class="an-card-title">Brand Performance — Units vs Revenue</span>
+                    <canvas id="chart-brands"></canvas>
+                </div>
+                <div class="an-card">
+                    <span class="an-card-title">Product Leaderboard</span>
+                    <div id="prod-leaderboard" style="overflow-y:auto;flex:1;"></div>
+                </div>
             </div>
-
-            <div class="an-chart-full an-card">
-                <div class="an-card-title">Brand Performance — Units vs Revenue</div>
-                <canvas id="chart-brands" height="80"></canvas>
-            </div>
-
-            <!-- Inventory coverage -->
-            <div class="an-card an-chart-full" style="margin-bottom:14px;">
-                <div class="an-card-title">Rim Size Coverage — Inventory Depth</div>
-                <div id="size-coverage-bars"></div>
-            </div>
-
-            <!-- Top products table -->
-            <div class="an-card an-chart-full" style="margin-bottom:14px;">
-                <div class="an-card-title">Product Leaderboard</div>
-                <div id="prod-leaderboard"></div>
-            </div>
-
-            <!-- AI INSIGHTS -->
             <div class="an-ai-card" id="ai-prod">
                 <div class="an-ai-header">
                     <span class="an-ai-badge">⬡ Gemini AI Insights</span>
-                    <span class="an-ai-model">gemini-2.0-flash · Product Analysis</span>
+                    <span class="an-ai-model">Product Analysis</span>
+                    <button class="an-ai-regen" onclick="runProductAI()" style="margin-left:auto;">↺ Regenerate</button>
                 </div>
-                <div class="an-ai-body loading" id="ai-prod-body">Analysing product data with Gemini AI…</div>
-                <button class="an-ai-regen" onclick="runProductAI()">↺ Regenerate</button>
+                <div class="an-ai-body loading" id="ai-prod-body">Analysing product data…</div>
             </div>
+        </div><!-- /an-panel-inner -->
         </div>
 
         <!-- ════════════ CUSTOMER REPORT ════════════ -->
         <div id="tab-customer" class="an-panel">
-
+        <div class="an-panel-inner">
             <div class="an-section-hdr">
-                <div>
-                    <div class="an-section-title">CUSTOMER <span>REPORT</span></div>
-                    <div class="an-section-sub"><span class="an-live-dot"></span>Buyer behaviour & loyalty analytics</div>
-                </div>
+                <div class="an-section-title">CUSTOMER <span>REPORT</span></div>
+                <div class="an-section-sub"><span class="an-live-dot"></span>Buyer behaviour &amp; loyalty</div>
             </div>
-
-            <!-- KPIs -->
             <div class="an-kpi-grid">
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">👥</div>
-                    <div class="an-kpi-label">Total Customers</div>
-                    <div class="an-kpi-value red" id="kpi-customers">0</div>
-                    <div class="an-kpi-delta neutral">Registered accounts</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">🔁</div>
-                    <div class="an-kpi-label">Repeat Buyers</div>
-                    <div class="an-kpi-value green" id="kpi-repeat">0</div>
-                    <div class="an-kpi-delta neutral" id="kpi-repeat-d">—</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">🏅</div>
-                    <div class="an-kpi-label">Top Customer LTV</div>
-                    <div class="an-kpi-value amber" id="kpi-topltv">R0</div>
-                    <div class="an-kpi-delta neutral" id="kpi-topltv-name">—</div>
-                </div>
-                <div class="an-kpi">
-                    <div class="an-kpi-icon">⚡</div>
-                    <div class="an-kpi-label">Fitment Rate</div>
-                    <div class="an-kpi-value" id="kpi-fitrate">0%</div>
-                    <div class="an-kpi-delta neutral">Orders with fitment</div>
-                </div>
+                <div class="an-kpi"><div class="an-kpi-icon">👥</div><div class="an-kpi-label">Total Customers</div><div class="an-kpi-value red" id="kpi-customers">0</div><div class="an-kpi-delta neutral">Registered</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">🔁</div><div class="an-kpi-label">Repeat Buyers</div><div class="an-kpi-value green" id="kpi-repeat">0</div><div class="an-kpi-delta neutral" id="kpi-repeat-d">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">🏅</div><div class="an-kpi-label">Top LTV</div><div class="an-kpi-value amber" id="kpi-topltv">R0</div><div class="an-kpi-delta neutral" id="kpi-topltv-name">—</div></div>
+                <div class="an-kpi"><div class="an-kpi-icon">⚡</div><div class="an-kpi-label">Fitment Rate</div><div class="an-kpi-value" id="kpi-fitrate">0%</div><div class="an-kpi-delta neutral">With fitment</div></div>
             </div>
-
-            <!-- Charts -->
             <div class="an-chart-grid-2">
                 <div class="an-card">
-                    <div class="an-card-title">Customer Acquisition — Monthly</div>
-                    <canvas id="chart-acquisition" height="90"></canvas>
+                    <span class="an-card-title">Customer Acquisition — Monthly</span>
+                    <canvas id="chart-acquisition"></canvas>
                 </div>
                 <div class="an-card">
-                    <div class="an-card-title">Delivery vs Collection Split</div>
-                    <div class="an-donut-wrap">
-                        <canvas id="chart-delivery-donut" class="an-donut-canvas" width="90" height="90"></canvas>
+                    <span class="an-card-title">Delivery vs Collection</span>
+                    <div class="an-donut-wrap" style="flex:1;align-items:center;">
+                        <canvas id="chart-delivery-donut" class="an-donut-canvas" width="90"></canvas>
                         <div class="an-donut-legend" id="donut-legend-delivery"></div>
                     </div>
                 </div>
+                <div class="an-card">
+                    <span class="an-card-title">Spend Distribution</span>
+                    <canvas id="chart-spend-dist"></canvas>
+                </div>
+                <div class="an-card">
+                    <span class="an-card-title">Top Buyers by Lifetime Value</span>
+                    <div id="cust-leaderboard" style="overflow-y:auto;flex:1;"></div>
+                </div>
             </div>
-
-            <div class="an-chart-full an-card">
-                <div class="an-card-title">Order Value Distribution — Spend Segments</div>
-                <canvas id="chart-spend-dist" height="80"></canvas>
-            </div>
-
-            <!-- Top Buyers leaderboard -->
-            <div class="an-card an-chart-full" style="margin-bottom:14px;">
-                <div class="an-card-title">🏆 Top Buyers by Lifetime Value</div>
-                <div id="cust-leaderboard"></div>
-            </div>
-
-            <!-- Orders per customer -->
-            <div class="an-card an-chart-full" style="margin-bottom:14px;">
-                <div class="an-card-title">Customer Order Frequency</div>
-                <div id="cust-frequency"></div>
-            </div>
-
-            <!-- AI INSIGHTS -->
             <div class="an-ai-card">
                 <div class="an-ai-header">
                     <span class="an-ai-badge">⬡ Gemini AI Insights</span>
-                    <span class="an-ai-model">gemini-2.0-flash · Customer Intelligence</span>
+                    <span class="an-ai-model">Customer Intelligence</span>
+                    <button class="an-ai-regen" onclick="runCustomerAI()" style="margin-left:auto;">↺ Regenerate</button>
                 </div>
-                <div class="an-ai-body loading" id="ai-cust-body">Analysing customer data with Gemini AI…</div>
-                <button class="an-ai-regen" onclick="runCustomerAI()">↺ Regenerate</button>
+                <div class="an-ai-body loading" id="ai-cust-body">Analysing customer data…</div>
             </div>
+        </div><!-- /an-panel-inner -->
         </div>
 
     </div><!-- /an-wrap -->
@@ -1376,27 +1256,29 @@ function fmt(n) { return 'R' + Number(n||0).toLocaleString('en-ZA'); }
 function fmtN(n) { return Number(n||0).toLocaleString('en-ZA'); }
 
 // ── Open / close ─────────────────────────────────────────────────────────────
+// ── Tab switching ─────────────────────────────────────────────────────────────
+const _builtTabs = new Set();
+
 window.openAnalyticsDashboard = function() {
     document.getElementById('analytics-overlay').classList.add('visible');
     document.body.style.overflow = 'hidden';
-    // Only build financial tab immediately (active tab)
+    _builtTabs.clear();
+    _builtTabs.add('financial');
     const { orders, tires, users } = window._analyticsData;
     setTimeout(() => {
         buildFinancialCharts(orders, tires);
         runFinancialAI();
     }, 50);
 };
+
 window.closeAnalytics = function() {
     document.getElementById('analytics-overlay').classList.remove('visible');
     document.body.style.overflow = '';
     _builtTabs.clear();
-    // Reset to financial tab
     document.querySelectorAll('.an-tab').forEach((t,i) => t.classList.toggle('active', i===0));
     document.querySelectorAll('.an-panel').forEach((p,i) => p.classList.toggle('active', i===0));
 };
 
-// ── Tab switching ─────────────────────────────────────────────────────────────
-const _builtTabs = new Set();
 window.switchTab = function(name, btn) {
     document.querySelectorAll('.an-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.an-panel').forEach(p => p.classList.remove('active'));
