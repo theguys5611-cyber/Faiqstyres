@@ -888,12 +888,12 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Revenue vs Cost vs Profit — Monthly</div>
-                    <canvas id="chart-monthly-fin" height="140"></canvas>
+                    <canvas id="chart-monthly-fin" height="90"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Revenue Breakdown by Status</div>
                     <div class="an-donut-wrap">
-                        <canvas id="chart-status-donut" class="an-donut-canvas" width="120" height="120"></canvas>
+                        <canvas id="chart-status-donut" class="an-donut-canvas" width="90" height="90"></canvas>
                         <div class="an-donut-legend" id="donut-legend-status"></div>
                     </div>
                 </div>
@@ -903,11 +903,11 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Fitment Revenue Contribution</div>
-                    <canvas id="chart-fitment" height="130"></canvas>
+                    <canvas id="chart-fitment" height="80"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Discount Impact on Revenue</div>
-                    <canvas id="chart-discounts" height="130"></canvas>
+                    <canvas id="chart-discounts" height="80"></canvas>
                 </div>
             </div>
 
@@ -983,12 +983,12 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Top 10 Best-Selling Tyres by Revenue</div>
-                    <canvas id="chart-topsellers" height="150"></canvas>
+                    <canvas id="chart-topsellers" height="90"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Sales by Rim Size Category</div>
                     <div class="an-donut-wrap">
-                        <canvas id="chart-rim-donut" class="an-donut-canvas" width="120" height="120"></canvas>
+                        <canvas id="chart-rim-donut" class="an-donut-canvas" width="90" height="90"></canvas>
                         <div class="an-donut-legend" id="donut-legend-rim"></div>
                     </div>
                 </div>
@@ -996,7 +996,7 @@
 
             <div class="an-chart-full an-card">
                 <div class="an-card-title">Brand Performance — Units vs Revenue</div>
-                <canvas id="chart-brands" height="130"></canvas>
+                <canvas id="chart-brands" height="80"></canvas>
             </div>
 
             <!-- Inventory coverage -->
@@ -1064,12 +1064,12 @@
             <div class="an-chart-grid-2">
                 <div class="an-card">
                     <div class="an-card-title">Customer Acquisition — Monthly</div>
-                    <canvas id="chart-acquisition" height="140"></canvas>
+                    <canvas id="chart-acquisition" height="90"></canvas>
                 </div>
                 <div class="an-card">
                     <div class="an-card-title">Delivery vs Collection Split</div>
                     <div class="an-donut-wrap">
-                        <canvas id="chart-delivery-donut" class="an-donut-canvas" width="120" height="120"></canvas>
+                        <canvas id="chart-delivery-donut" class="an-donut-canvas" width="90" height="90"></canvas>
                         <div class="an-donut-legend" id="donut-legend-delivery"></div>
                     </div>
                 </div>
@@ -1077,7 +1077,7 @@
 
             <div class="an-chart-full an-card">
                 <div class="an-card-title">Order Value Distribution — Spend Segments</div>
-                <canvas id="chart-spend-dist" height="130"></canvas>
+                <canvas id="chart-spend-dist" height="80"></canvas>
             </div>
 
             <!-- Top Buyers leaderboard -->
@@ -1354,6 +1354,7 @@ const COLORS = {
 const CHART_DEFAULTS = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: false,
     plugins: {
         legend: { display: false },
         tooltip: {
@@ -1378,39 +1379,42 @@ function fmtN(n) { return Number(n||0).toLocaleString('en-ZA'); }
 window.openAnalyticsDashboard = function() {
     document.getElementById('analytics-overlay').classList.add('visible');
     document.body.style.overflow = 'hidden';
-    setTimeout(buildDashboard, 80);
+    // Only build financial tab immediately (active tab)
+    const { orders, tires, users } = window._analyticsData;
+    setTimeout(() => {
+        buildFinancialCharts(orders, tires);
+        runFinancialAI();
+    }, 50);
 };
 window.closeAnalytics = function() {
     document.getElementById('analytics-overlay').classList.remove('visible');
     document.body.style.overflow = '';
+    _builtTabs.clear();
+    // Reset to financial tab
+    document.querySelectorAll('.an-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.querySelectorAll('.an-panel').forEach((p,i) => p.classList.toggle('active', i===0));
 };
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
+const _builtTabs = new Set();
 window.switchTab = function(name, btn) {
     document.querySelectorAll('.an-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.an-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
-    setTimeout(() => redrawChartsForTab(name), 50);
+    const { orders, tires, users } = window._analyticsData;
+    if (!_builtTabs.has(name)) {
+        _builtTabs.add(name);
+        if (name === 'financial') { buildFinancialCharts(orders, tires); runFinancialAI(); }
+        if (name === 'product')   { buildProductCharts(orders, tires);   runProductAI(); }
+        if (name === 'customer')  { buildCustomerCharts(orders, users);  runCustomerAI(); }
+    }
 };
 
-function redrawChartsForTab(name) {
-    const data = window._analyticsData;
-    if (name === 'financial') buildFinancialCharts(data.orders, data.tires);
-    if (name === 'product')   buildProductCharts(data.orders, data.tires);
-    if (name === 'customer')  buildCustomerCharts(data.orders, data.users);
-}
+function redrawChartsForTab(name) { /* handled by switchTab now */ }
 
-// ── Main build ────────────────────────────────────────────────────────────────
-function buildDashboard() {
-    const { orders, users, tires } = window._analyticsData;
-    buildFinancialCharts(orders, tires);
-    buildProductCharts(orders, tires);
-    buildCustomerCharts(orders, users);
-    runFinancialAI();
-    runProductAI();
-    runCustomerAI();
-}
+// ── Main build (unused - tabs build lazily) ──────────────────────────────────
+function buildDashboard() { /* tabs now build on demand */ }
 
 // ════════════════════════════════════════════════════════════════
 // FINANCIAL CHARTS
