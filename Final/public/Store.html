@@ -608,7 +608,7 @@
                 return null;
             },
 
-            // ── WISHLIST HELPERS ──────────────────────────────────────────────
+            // WISHLIST HELPERS 
 
             isWishlisted(tireId) {
                 return this.wishlist.some(t => t.id === tireId);
@@ -659,17 +659,13 @@
                 }
             },
 
-            /**
-             * Load the user's wishlist from Firestore on login.
-             * The Firestore doc stores { tireId: tireSize, ... } fields.
-             * We cross-reference with the loaded tires array to get full details.
-             */
+            
             async loadFirestoreWishlist() {
                 try {
                     const ref = doc(db, "Wishlist", this.currentUser.email);
                     const snap = await getDoc(ref);
                     if (snap.exists()) {
-                        const data = snap.data(); // { "MichelinXYZ": "265/60R20", ... }
+                        const data = snap.data(); 
                         // Map saved IDs back to full tire objects (need tires loaded first)
                         const saved = [];
                         for (const [tireId, tireSize] of Object.entries(data)) {
@@ -690,7 +686,7 @@
 
             
 
-            // ── IMAGE SEARCH ──────────────────────────────────────────────────
+            // IMAGE SEARCH 
 
             onImgSelect(event) {
                 const file = event.target.files[0];
