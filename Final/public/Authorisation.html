@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
     <style>
-        /* ── Order History — Customer ── */
+        /*  Order History — Customer  */
         .orders-section { margin-top: 32px; }
         .orders-section-title {
             font-family: var(--font-display);
@@ -90,9 +90,9 @@
         .order-modal-detail { background: var(--bg-light); padding: 14px; font-size: 0.84rem; line-height: 1.8; }
         .order-modal-detail strong { color: var(--twt-dark); }
 
-        /* ════════════════════════════════════════════════════
-           ANALYTICS DASHBOARD — FAIQ'S TYRES DESIGN SYSTEM
-        ════════════════════════════════════════════════════ */
+        /* 
+           Analytics dashboard
+       */
         #analytics-overlay {
             display: none;
             position: fixed;
@@ -106,11 +106,11 @@
         }
         #analytics-overlay.visible { display: flex; }
 
-        /* No-scroll body — fills remaining height */
+        
         .an-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
         .an-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 10px 16px 10px; overflow: hidden; }
 
-        /* TOPBAR */
+        
         .an-topbar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 8px 16px; border-bottom: 1px solid var(--border);
@@ -135,7 +135,7 @@
         }
         .an-close-btn:hover { background: var(--twt-dark); color: white; }
 
-        /* REPORT TABS */
+        
         .an-tabs {
             display: flex; gap: 0; flex-shrink: 0;
             background: white; padding: 0 16px;
@@ -152,12 +152,12 @@
         .an-tab:hover { color: var(--twt-dark); }
         .an-tab.active { color: var(--twt-red); border-bottom-color: var(--twt-red); }
 
-        /* REPORT PANELS */
+        
         .an-panel { display: none; flex: 1; min-height: 0; overflow: hidden; }
         .an-panel.active { display: flex; flex-direction: column; }
         .an-panel-inner { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
 
-        /* SECTION HEADER */
+       
         .an-section-hdr {
             display: flex; align-items: flex-end; justify-content: space-between;
             margin-bottom: 6px; flex-shrink: 0;
@@ -180,7 +180,7 @@
         }
         @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
 
-        /* KPI CARDS */
+        
         .an-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex-shrink: 0; }
         @media (max-width: 900px) { .an-kpi-grid { grid-template-columns: repeat(2,1fr); } }
 
@@ -211,7 +211,7 @@
         .an-kpi-delta.neutral { color: var(--text-muted); }
         .an-kpi-icon { position: absolute; top: 14px; right: 14px; font-size: 1.3rem; opacity: 0.08; }
 
-        /* CHART CARDS */
+        
         .an-chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; flex: 1; min-height: 0; }
         .an-chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; flex: 1; min-height: 0; }
         @media (max-width: 1000px) { .an-chart-grid-2, .an-chart-grid-3 { grid-template-columns: 1fr; } }
@@ -231,7 +231,7 @@
         }
 
 
-        /* LEADERBOARD */
+        
         .an-leaderboard-row {
             display: flex; align-items: center; gap: 8px;
             padding: 4px 0; border-bottom: 1px solid var(--border);
@@ -255,7 +255,7 @@
             color: var(--twt-red); font-weight: 700; flex-shrink: 0;
         }
 
-        /* AI INSIGHT CARD */
+        
         .an-ai-card {
             background: white; border: 1px solid var(--border);
             border-left: 4px solid var(--twt-red);
@@ -337,7 +337,7 @@
             font-size: 0.75rem; font-weight: 700;
         }
 
-        /* PROGRESS BARS */
+        
         .an-prog-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
         .an-prog-label { color: var(--text-muted); min-width: 80px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .an-prog-bar-bg { flex: 1; height: 5px; background: var(--bg-light); }
@@ -347,7 +347,7 @@
             font-size: 0.7rem; font-weight: 700; min-width: 60px; text-align: right;
         }
 
-        /* TIMELINE / STAT GRID */
+        
         .an-tl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         @media (max-width: 800px) { .an-tl-grid { grid-template-columns: 1fr; } }
         .an-tl-stat {
@@ -362,7 +362,7 @@
             letter-spacing: 1px; color: var(--text-muted); margin-top: 4px;
         }
 
-        /* Analytics launch button */
+        
         .btn-analytics {
             display: inline-flex; align-items: center; gap: 8px;
             padding: 10px 24px; font-family: var(--font-display);
@@ -399,7 +399,7 @@
         <div class="page-subtitle">{{ user ? 'Manage your account and preferences' : "Access your Faiq's Tyres account or join today" }}</div>
     </div>
 
-    <!-- ══════════ LOGIN ══════════ -->
+    
     <div v-if="!user" class="page-container">
         <div class="login-split card" style="padding: 0; max-width: 880px; margin: 0 auto;">
             <div class="login-left">
@@ -434,7 +434,7 @@
         </div>
     </div>
 
-    <!-- ══════════ CUSTOMER DASHBOARD ══════════ -->
+    
     <div v-else-if="role === 'customer'" class="page-container">
         <div class="card">
             <div class="dashboard-header">
@@ -548,10 +548,10 @@
         </div>
     </div>
 
-    <!-- ══════════ ADMIN DASHBOARD ══════════ -->
+    <!--  Admin dashboard-->
     <div v-else-if="role === 'admin'" class="page-container">
 
-        <!-- Admin header -->
+        
         <div class="dashboard-header" style="margin-bottom: 30px;">
             <div class="user-greeting">
                 <div class="avatar avatar-admin">⚙</div>
@@ -561,7 +561,7 @@
                 </div>
             </div>
             <div class="dashboard-action-bar">
-                <!-- ★ ANALYTICS BUTTON ★ -->
+                
                 <button @click="openAnalytics" class="btn-analytics">
                     <span class="btn-analytics-icon">📊</span> Analytics Dashboard
                 </button>
@@ -935,10 +935,10 @@
                 </div>
                 <div class="an-ai-body loading" id="ai-prod-body">Analysing product data…</div>
             </div>
-        </div><!-- /an-panel-inner -->
+        </div>
         </div>
 
-        <!-- ════════════ CUSTOMER REPORT ════════════ -->
+        <!-- CUSTOMER REPORT -->
         <div id="tab-customer" class="an-panel">
         <div class="an-panel-inner">
             <div class="an-section-hdr">
@@ -988,9 +988,7 @@
 </div><!-- /analytics-overlay -->
 
 
-<!-- ══════════════════════════════════════════════════════════════
-     SCRIPTS
-══════════════════════════════════════════════════════════════ -->
+
 <script type="module">
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
@@ -1002,7 +1000,7 @@
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
     import { auth, db } from './Backend/Firebase.js';
 
-    // Expose data globally for analytics
+    
     window._analyticsData = { orders: [], users: [], tires: [] };
 
     createApp({
@@ -1214,9 +1212,9 @@
 </script>
 
 
-<!-- ══════ ANALYTICS ENGINE ══════ -->
+
 <script>
-// ── Chart registry (destroy before redraw) ──────────────────────────────────
+
 const _charts = {};
 function destroyChart(id) { if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; } }
 
@@ -1295,12 +1293,12 @@ window.switchTab = function(name, btn) {
 
 function redrawChartsForTab(name) { /* handled by switchTab now */ }
 
-// ── Main build (unused - tabs build lazily) ──────────────────────────────────
+
 function buildDashboard() { /* tabs now build on demand */ }
 
-// ════════════════════════════════════════════════════════════════
+
 // FINANCIAL CHARTS
-// ════════════════════════════════════════════════════════════════
+
 function buildFinancialCharts(orders, tires) {
     const completed = orders.filter(o => o.status !== 'cancelled');
 
@@ -1455,9 +1453,9 @@ function buildFinancialCharts(orders, tires) {
     });
 }
 
-// ════════════════════════════════════════════════════════════════
+
 // PRODUCT CHARTS
-// ════════════════════════════════════════════════════════════════
+
 function buildProductCharts(orders, tires) {
     const completed = orders.filter(o => o.status !== 'cancelled');
 
@@ -1608,9 +1606,9 @@ function buildProductCharts(orders, tires) {
     ).join('') || '<p style="color:#666666;font-size:0.85rem;padding:16px 0;">No sales data yet.</p>';
 }
 
-// ════════════════════════════════════════════════════════════════
+
 // CUSTOMER CHARTS
-// ════════════════════════════════════════════════════════════════
+
 function buildCustomerCharts(orders, users) {
     // Customer spend map
     const custMap = {};
@@ -1767,9 +1765,7 @@ function buildCustomerCharts(orders, users) {
     ).join('');
 }
 
-// ════════════════════════════════════════════════════════════════
-// AI INSIGHTS via Anthropic API (Claude in Claude)
-// ════════════════════════════════════════════════════════════════
+//Ai insights
 async function callGeminiAI(prompt) {
     const response = await fetch("/ask-ai", {
         method: "POST",
