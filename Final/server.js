@@ -13,9 +13,7 @@ const __dirname  = path.dirname(__filename);
 
 const app = express();
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
-// Allows both local development AND the deployed Render domain.
-// Add your custom domain here too if you set one up later.
+//Using Cors
 const ALLOWED_ORIGINS = [
     // Local dev
     'http://localhost:5500',
@@ -23,8 +21,7 @@ const ALLOWED_ORIGINS = [
     'http://localhost:5501',
     'http://127.0.0.1:5501',
     'http://localhost:3000',
-    // Render — this is set automatically via the RENDER_EXTERNAL_URL env var,
-    // or you can hard-code it once you know it: 'https://your-app.onrender.com'
+    
     ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
     ...(process.env.ALLOWED_ORIGIN     ? [process.env.ALLOWED_ORIGIN]      : []),
 ];
@@ -42,12 +39,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' })); // Allow larger payloads for base64 images
 
-// ── STATIC FILES ──────────────────────────────────────────────────────────────
-// Serve all HTML / CSS / JS / images from the "public" folder.
-// This means Render only needs ONE service for the entire app.
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Validate API key exists
+
 if (!process.env.GEMINI_API_KEY) {
     console.error("ERROR: GEMINI_API_KEY not found in environment variables");
     console.log("\nSet GEMINI_API_KEY in your Render environment variables.");
@@ -57,16 +52,10 @@ if (!process.env.GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
-    res.json({
-        status    : "AI Server running",
-        provider  : "Google Gemini Flash",
-        timestamp : new Date().toISOString()
-    });
-});
 
-// ─── HELPER: Extract the LARGEST rim inch value from scraped HTML ────────────
+
+
+
 function extractLargestRimInches(html) {
     const matches = html.match(/\d{3}\/\d{2}[ZP]?R(\d{2})/gi);
     if (!matches || matches.length === 0) return null;
@@ -82,16 +71,14 @@ function extractLargestRimInches(html) {
     return Math.max(...rimValues);
 }
 
-// ─── HELPER: Find a matching tyre size string for a given rim inch value ─────
+// Find a matching tyre size string for a given rim inch value 
 function getTyreSizeForRim(html, rimInches) {
     const pattern = new RegExp(`\\d{3}\\/\\d{2}[ZP]?R${rimInches}(?!\\d)`, 'i');
     const match = html.match(pattern);
     return match ? match[0] : null;
 }
 
-// ─── ENDPOINT: General AI chat / recommendation ──────────────────────────────
-// Accepts: { message: string, inventory: string }
-// Returns: { reply: string }
+
 app.post("/ask-ai", async (req, res) => {
     const { message, inventory } = req.body;
 
@@ -124,7 +111,7 @@ ${inventory}`
     }
 });
 
-// ─── ENDPOINT: Car tyre lookup ───────────────────────────────────────────────
+//  Car tyre lookup 
 app.post("/lookup-car-tyres", async (req, res) => {
     const { make, model: carModel, year, inventory } = req.body;
 
@@ -147,7 +134,7 @@ app.post("/lookup-car-tyres", async (req, res) => {
         'Accept-Language': 'en-US,en;q=0.9',
     };
 
-    // ── SOURCE 1: wheel-size.com (primary) ──────────────────────────────────
+    // SOURCE 1: wheel-size.com 
     try {
         const url = `https://www.wheel-size.com/size/${makeSlug}/${modelSlug}/${yearPart}`;
         console.log(`[wheel-size.com] GET ${url}`);
@@ -164,7 +151,7 @@ app.post("/lookup-car-tyres", async (req, res) => {
         console.log(`[wheel-size.com] Failed: ${err.message}`);
     }
 
-    // ── SOURCE 2: tirewheelguide.com (fallback) ──────────────────────────────
+    // SOURCE 2: tirewheelguide.com 
     if (rimInches === 0) {
         try {
             const url = `https://tirewheelguide.com/sizes/${makeSlug}/${modelSlug}/${yearPart}`;
@@ -181,7 +168,7 @@ app.post("/lookup-car-tyres", async (req, res) => {
         }
     }
 
-    // ── SOURCE 3: Gemini AI (last resort) ────────────────────────────────────
+    // SOURCE 3: Gemini AI 
     if (rimInches === 0) {
         try {
             console.log(`[AI Lookup] Both web sources failed — asking Gemini...`);
@@ -211,8 +198,7 @@ CRITICAL RULES:
         }
     }
 
-    // ── Filter inventory for matching tyres ──────────────────────────────────
-    // inventory arrives as a pipe-delimited string: "id|name|size|price|desc\n..."
+    
     let bestTyreId = null;
     let matchReason = null;
     if (inventory) {
@@ -257,9 +243,7 @@ CRITICAL RULES:
     });
 });
 
-// ─── ENDPOINT: Analyse tyre image and match to inventory ─────────────────────
-// Accepts: { imageBase64: string (data URL), inventory: string (pipe-delimited) }
-// Returns: { matches: [{id, name, size, price, desc, matchReason}], analysed: string }
+
 app.post("/analyse-tyre-image", async (req, res) => {
     const { imageBase64, inventory } = req.body;
 
@@ -273,14 +257,13 @@ app.post("/analyse-tyre-image", async (req, res) => {
     console.log(`[${new Date().toISOString()}] Tyre image analysis requested`);
 
     try {
-        // Strip the data URL prefix to get raw base64 + mime type
-        // imageBase64 looks like: "data:image/jpeg;base64,/9j/4AAQ..."
+        
         const matches = imageBase64.match(/^data:(.+);base64,(.+)$/);
         if (!matches) {
             return res.status(400).json({ error: "Invalid image format. Must be a base64 data URL." });
         }
-        const mimeType = matches[1];   // e.g. "image/jpeg"
-        const rawB64   = matches[2];   // the actual base64 data
+        const mimeType = matches[1];   
+        const rawB64   = matches[2];   
 
         const prompt = `You are an expert tyre analyst. A customer has uploaded a photo of a tyre or a vehicle's tyre area.
 
@@ -334,7 +317,7 @@ RULES:
 
         const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-        // Hydrate each match with full tyre details from inventory
+        
         const tyreList = inventory.split('\n').map(line => {
             const [id, name, size, price, desc] = line.split('|');
             return { id, name, size, price, desc };
@@ -359,10 +342,9 @@ RULES:
     }
 });
 
-// ── CATCH-ALL: serve index.html for any non-API route ────────────────────────
-// This means navigating to /Store.html, /Authorisation.html etc. all work.
+
 app.get('*', (req, res) => {
-    // If it's an API route that wasn't found, return 404 JSON
+    
     if (req.path.startsWith('/api/') || req.path.startsWith('/ask-ai') ||
         req.path.startsWith('/lookup-car-tyres') || req.path.startsWith('/analyse-tyre-image')) {
         return res.status(404).json({ error: 'API endpoint not found' });
