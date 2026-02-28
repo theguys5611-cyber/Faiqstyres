@@ -1,23 +1,4 @@
-/**
- * models.js — Domain Model Layer (OOP / MVC Model)
- * ═══════════════════════════════════════════════════
- * Faiq's Tyres | INF4027W Mini Project 2026
- *
- * Architecture: Model-View-Controller (MVC)
- *   Model   → This file (models.js) — all business logic & data structures
- *   View    → HTML templates rendered by Vue.js reactive data
- *   Controller → Vue component methods + server.js Express route handlers
- *
- * Classes defined here:
- *   • Tyre            — A single product in inventory
- *   • TyreRepository  — Firestore CRUD operations for tyres (data access layer)
- *   • CartItem        — One line-item in the shopping cart
- *   • Cart            — Full cart with totals, promo codes, persistence
- *   • Order           — An immutable order payload ready for Firestore
- *   • WishlistManager — Add/remove/persist wishlist via Firestore
- *   • AuthManager     — Auth state, role resolution, admin guard
- *   • Validator       — Form validation with detailed error messages
- */
+
 
 // ─── PROMO CODE CONFIG ────────────────────────────────────────────────────────
 export const PROMO_CODES = {
