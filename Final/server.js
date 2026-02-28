@@ -8,8 +8,141 @@ import { fileURLToPath } from "url";
 
 dotenv.config();
 
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
+
+
+class InventoryService {
+    /**
+     * Parse the pipe-delimited inventory string sent from the frontend.
+     * 
+     * @param {string} inventoryStr
+     * @returns {{ id, name, size, price, desc }[]}
+     */
+    static parse(inventoryStr) {
+        if (!inventoryStr) return [];
+        return inventoryStr.split('\n')
+            .map(line => {
+                const [id, name, size, price, desc] = line.split('|');
+                return { id, name, size: (size || '').trim(), price: parseFloat(price) || 0, desc };
+            })
+            .filter(t => t.id && t.name);
+    }
+
+    /**
+     * Find the best matching tyre from inventory for a given rim size.
+     * Prefers exact OE size match; falls back to closest rim diameter.
+     * @param {string} inventoryStr
+     * @param {string} oeSize - e.g. "205/55R16"
+     * @param {number} rimInches - e.g. 16
+     * @returns {{ bestTyreId: string|null, matchReason: string|null }}
+     */
+    static findBestMatch(inventoryStr, oeSize, rimInches) {
+        const tyres = InventoryService.parse(inventoryStr);
+        if (tyres.length === 0) return { bestTyreId: null, matchReason: null };
+
+        // Attempt 1: exact OE size match
+        const exact = tyres.find(t => t.size === oeSize);
+        if (exact) {
+            return { bestTyreId: exact.id, matchReason: `Exact OE size match (${oeSize})` };
+        }
+
+        // Attempt 2: closest rim diameter match
+        let closest     = null;
+        let closestDiff = Infinity;
+        tyres.forEach(t => {
+            const m = t.size.match(/R(\d{2})/i);
+            if (m) {
+                const diff = Math.abs(parseInt(m[1]) - rimInches);
+                if (diff < closestDiff) { closestDiff = diff; closest = t; }
+            }
+        });
+
+        return closest
+            ? { bestTyreId: closest.id, matchReason: `Closest rim size match (${closest.size}) for ${rimInches}" wheels` }
+            : { bestTyreId: null, matchReason: null };
+    }
+}
+
+
+class TyreLookupService {
+    constructor(geminiModel) {
+        this._model = geminiModel;
+    }
+
+    extractLargestRimInches(html) {
+        const matches = html.match(/\d{3}\/\d{2}[ZP]?R(\d{2})/gi);
+        if (!matches || matches.length === 0) return null;
+        const rimValues = matches
+            .map(s => { const m = s.match(/R(\d{2})$/i); return m ? parseInt(m[1]) : 0; })
+            .filter(n => n >= 14 && n <= 24);
+        return rimValues.length === 0 ? null : Math.max(...rimValues);
+    }
+
+    getTyreSizeForRim(html, rimInches) {
+        const pattern = new RegExp(`\\d{3}\\/\\d{2}[ZP]?R${rimInches}(?!\\d)`, 'i');
+        const match   = html.match(pattern);
+        return match ? match[0] : null;
+    }
+
+    async lookupFromWebSources(make, carModel, year) {
+        const scrapeHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+        };
+        const makeSlug  = make.toLowerCase().replace(/\s+/g, '-');
+        const modelSlug = carModel.toLowerCase().replace(/\s+/g, '-');
+        const yearPart  = year ? `${year}/` : '';
+        let oeSize = 'Unknown', rimInches = 0;
+
+        // Source 1: wheel-size.com
+        try {
+            const url  = `https://www.wheel-size.com/size/${makeSlug}/${modelSlug}/${yearPart}`;
+            const resp = await axios.get(url, { timeout: 6000, headers: scrapeHeaders });
+            const largest = this.extractLargestRimInches(resp.data);
+            if (largest) {
+                rimInches = largest;
+                oeSize = this.getTyreSizeForRim(resp.data, largest) || oeSize;
+            }
+        } catch (err) { console.log(`[wheel-size.com] Failed: ${err.message}`); }
+
+        // Source 2: tirewheelguide.com (fallback)
+        if (rimInches === 0) {
+            try {
+                const url  = `https://tirewheelguide.com/sizes/${makeSlug}/${modelSlug}/${yearPart}`;
+                const resp = await axios.get(url, { timeout: 6000, headers: scrapeHeaders });
+                const largest = this.extractLargestRimInches(resp.data);
+                if (largest) {
+                    rimInches = largest;
+                    oeSize = this.getTyreSizeForRim(resp.data, largest) || oeSize;
+                }
+            } catch (err) { console.log(`[tirewheelguide.com] Failed: ${err.message}`); }
+        }
+
+        return { oeSize, rimInches };
+    }
+
+    async lookupFromAI(make, carModel, year) {
+        const prompt = `You are an automotive tyre fitment expert with full knowledge of every trim level.
+List ALL OE rim sizes for a ${year || ''} ${make} ${carModel}, including base AND premium trims.
+CRITICAL RULES:
+1. If the car is very new (2025+) and you lack data, use the most recent available model year.
+2. Set "rimInches" to the LARGEST available rim size.
+3. Return ONLY a raw JSON object. No markdown, no extra text.
+4. Shape: {"oeSize": "235/40R18", "rimInches": 18, "allSizes": ["205/55R16","225/45R17","235/40R18"]}`;
+
+        const result = await this._model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+        });
+        return JSON.parse(result.response.text());
+    }
+}
+
+
 
 const app = express();
 
@@ -53,30 +186,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 
-
-
-
-function extractLargestRimInches(html) {
-    const matches = html.match(/\d{3}\/\d{2}[ZP]?R(\d{2})/gi);
-    if (!matches || matches.length === 0) return null;
-
-    const rimValues = matches
-        .map(s => {
-            const m = s.match(/R(\d{2})$/i);
-            return m ? parseInt(m[1]) : 0;
-        })
-        .filter(n => n >= 14 && n <= 24);
-
-    if (rimValues.length === 0) return null;
-    return Math.max(...rimValues);
-}
-
-// Find a matching tyre size string for a given rim inch value 
-function getTyreSizeForRim(html, rimInches) {
-    const pattern = new RegExp(`\\d{3}\\/\\d{2}[ZP]?R${rimInches}(?!\\d)`, 'i');
-    const match = html.match(pattern);
-    return match ? match[0] : null;
-}
+const tyreLookupService = new TyreLookupService(model);
 
 
 app.post("/ask-ai", async (req, res) => {
@@ -121,75 +231,16 @@ app.post("/lookup-car-tyres", async (req, res) => {
 
     console.log(`[${new Date().toISOString()}] Looking up: ${year} ${make} ${carModel}`);
 
-    let oeSize = "Unknown";
-    let rimInches = 0;
+   
+    let { oeSize, rimInches } = await tyreLookupService.lookupFromWebSources(make, carModel, year);
 
-    const makeSlug  = make.toLowerCase().replace(/\s+/g, '-');
-    const modelSlug = carModel.toLowerCase().replace(/\s+/g, '-');
-    const yearPart  = year ? `${year}/` : '';
-
-    const scrapeHeaders = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-    };
-
-    // SOURCE 1: wheel-size.com 
-    try {
-        const url = `https://www.wheel-size.com/size/${makeSlug}/${modelSlug}/${yearPart}`;
-        console.log(`[wheel-size.com] GET ${url}`);
-        const resp = await axios.get(url, { timeout: 6000, headers: scrapeHeaders });
-        const largest = extractLargestRimInches(resp.data);
-        if (largest) {
-            rimInches = largest;
-            oeSize = getTyreSizeForRim(resp.data, largest) || oeSize;
-            console.log(`[wheel-size.com] Largest rim: ${largest}" | Size: ${oeSize}`);
-        } else {
-            console.log(`[wheel-size.com] No tyre sizes found in page`);
-        }
-    } catch (err) {
-        console.log(`[wheel-size.com] Failed: ${err.message}`);
-    }
-
-    // SOURCE 2: tirewheelguide.com 
-    if (rimInches === 0) {
-        try {
-            const url = `https://tirewheelguide.com/sizes/${makeSlug}/${modelSlug}/${yearPart}`;
-            console.log(`[tirewheelguide.com] GET ${url}`);
-            const resp = await axios.get(url, { timeout: 6000, headers: scrapeHeaders });
-            const largest = extractLargestRimInches(resp.data);
-            if (largest) {
-                rimInches = largest;
-                oeSize = getTyreSizeForRim(resp.data, largest) || oeSize;
-                console.log(`[tirewheelguide.com] Largest rim: ${largest}" | Size: ${oeSize}`);
-            }
-        } catch (err) {
-            console.log(`[tirewheelguide.com] Failed: ${err.message}`);
-        }
-    }
-
-    // SOURCE 3: Gemini AI 
+    
     if (rimInches === 0) {
         try {
             console.log(`[AI Lookup] Both web sources failed — asking Gemini...`);
-            const lookupPrompt = `You are an automotive tyre fitment expert with full knowledge of every trim level.
-
-List ALL OE rim sizes for a ${year || ''} ${make} ${carModel}, including base AND premium trims (Sport, N-Line, Limited, etc.).
-
-CRITICAL RULES:
-1. If the car is very new (2025+) and you lack data, use the most recent available model year.
-2. Set "rimInches" to the LARGEST available rim size — do NOT default to the base trim only.
-3. Return ONLY a raw JSON object. No markdown, no extra text.
-4. Shape: {"oeSize": "235/40R18", "rimInches": 18, "allSizes": ["205/55R16","225/45R17","235/40R18"]}`;
-
-            const result = await model.generateContent({
-                contents: [{ role: "user", parts: [{ text: lookupPrompt }] }],
-                generationConfig: { responseMimeType: "application/json" }
-            });
-
-            const parsed = JSON.parse(result.response.text());
+            const parsed = await tyreLookupService.lookupFromAI(make, carModel, year);
             if (parsed.oeSize && parsed.rimInches) {
-                oeSize = parsed.oeSize;
+                oeSize    = parsed.oeSize;
                 rimInches = parsed.rimInches;
                 console.log(`[AI Lookup] Found: ${oeSize} (${rimInches}")`);
             }
@@ -198,49 +249,12 @@ CRITICAL RULES:
         }
     }
 
-    
-    let bestTyreId = null;
-    let matchReason = null;
-    if (inventory) {
-        const tyres = inventory.split('\n').map(line => {
-            const [id, name, size, price, desc] = line.split('|');
-            return { id, name, size, price: parseFloat(price), desc };
-        });
+   
+    const { bestTyreId, matchReason } = inventory
+        ? InventoryService.findBestMatch(inventory, oeSize, rimInches)
+        : { bestTyreId: null, matchReason: null };
 
-        // Try to find an exact OE size match first
-        const exactMatch = tyres.find(t => t.size === oeSize);
-        if (exactMatch) {
-            bestTyreId = exactMatch.id;
-            matchReason = `Exact OE size match (${oeSize})`;
-        } else {
-            // If no exact match, find the closest rim inch match
-            let closestTyre = null;
-            let closestDiff = Infinity;
-
-            tyres.forEach(t => {
-                const match = t.size.match(/R(\d{2})/i);
-                if (match) {
-                    const tyreRim = parseInt(match[1]);
-                    const diff = Math.abs(tyreRim - rimInches);
-                    if (diff < closestDiff) {
-                        closestDiff = diff;
-                        closestTyre = t;
-                    }
-                }
-            });
-            if (closestTyre) {
-                bestTyreId = closestTyre.id;
-                matchReason = `Closest rim size match (${closestTyre.size}) for ${rimInches}" wheels`;
-            }
-        }
-    }
-
-    res.json({
-        oeSize,
-        rimInches,
-        bestTyreId,
-        matchReason
-    });
+    res.json({ oeSize, rimInches, bestTyreId, matchReason });
 });
 
 
