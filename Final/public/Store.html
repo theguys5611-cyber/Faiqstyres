@@ -495,12 +495,25 @@
 </div>
 
 <script type="module">
+    /**
+     * Store.html — Vue Controller Layer
+     * ════════════════════════════════════════════════════════════════
+     * MVC Architecture:
+     *   Model      → models.js  (Tyre, TyreRepository, Cart, WishlistManager, Validator)
+     *   View       → HTML template above (rendered by Vue.js reactive data)
+     *   Controller → createApp({ methods, mounted }) below
+     * ════════════════════════════════════════════════════════════════
+     */
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { collection, getDocs, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import { db } from './Backend/Firebase.js';
+    import { Tyre, TyreRepository, Cart, WishlistManager } from './Backend/models.js';
 
-    const auth = getAuth();
+    const auth       = getAuth();
+    const tyreRepo   = new TyreRepository(db, { collection, getDocs, addDoc: null, deleteDoc: null, doc });
+    const cart       = new Cart('faiq_cart');
+    const wishlistMgr = new WishlistManager(db, { doc, setDoc, getDoc, deleteField });
 
     
     const API_BASE = (window.location.port === '5500' || window.location.port === '5501')
@@ -558,9 +571,7 @@
                 wishlistOpen: false,
                 currentUser: null,  // Firebase auth user
 
-                // ── Brand image fallbacks ──
-                // If a tyre doc has no imageurl, the name is matched against these.
-                // Add more brands here as you expand your inventory.
+                
                 brandImages: {
                     'michelin':     'https://i.ibb.co/6Rt0Rs1C/michellin.jpg',
                     'firestone':    'https://i.ibb.co/cKKCr6sG/Firestone.jpg',
@@ -571,7 +582,7 @@
                     'goodyear':     'https://i.ibb.co/35KF3RcW/Goodyear.jpg',
                 },
 
-                // ── Image Search ──
+                
                 imgPreviewUrl: null,      // base64 data URL shown in preview
                 imgFileName: '',
                 imgFileSize: '',
@@ -590,8 +601,9 @@
             },
 
             async fetchTires() {
-                const q = await getDocs(collection(db, "Tires"));
-                this.tires = q.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Uses TyreRepository (data access layer) — returns Tyre instances
+                const tyres = await tyreRepo.getAll();
+                this.tires  = tyres;
             },
 
             
@@ -611,77 +623,24 @@
             // WISHLIST HELPERS 
 
             isWishlisted(tireId) {
-                return this.wishlist.some(t => t.id === tireId);
+                return wishlistMgr.isWishlisted(tireId);
             },
 
-            /**
-             * Toggle a tyre in/out of wishlist.
-             * If user is signed in → persist to Firestore under Wishlist/{email}
-             * If not signed in → keep in memory only (lost on refresh, but shown with a sign-in prompt)
-             */
             async toggleWishlist(tire) {
-                const already = this.isWishlisted(tire.id);
+                const email  = this.currentUser?.email || null;
+                const result = await wishlistMgr.toggle(tire, email);
+                this.wishlist = [...wishlistMgr.items];
 
-                if (already) {
-                    // Remove
-                    this.wishlist = this.wishlist.filter(t => t.id !== tire.id);
-                    if (this.currentUser) {
-                        await this.removeFromFirestoreWishlist(tire.id);
-                    }
-                    this.showToast('Removed from Wishlist.');
-                } else {
-                    // Add
-                    const entry = { id: tire.id, name: tire.name, size: tire.size, price: tire.price };
-                    this.wishlist.push(entry);
-                    if (this.currentUser) {
-                        await this.saveToFirestoreWishlist(entry);
-                    }
+                if (result.added) {
                     this.showToast('❤️ Saved to Wishlist! — <button onclick="document.querySelector(\'[data-wl-open]\').click()" style="background:none;border:none;color:var(--twt-red);font-weight:700;cursor:pointer;text-decoration:underline;">View Wishlist</button>');
+                } else {
+                    this.showToast('Removed from Wishlist.');
                 }
             },
 
-            async saveToFirestoreWishlist(entry) {
-                try {
-                    const ref = doc(db, "Wishlist", this.currentUser.email);
-                    // Store each tyre as a field keyed by its ID (matches your screenshot structure)
-                    await setDoc(ref, { [entry.id]: entry.size }, { merge: true });
-                } catch (e) {
-                    console.error("Wishlist save error:", e);
-                }
-            },
-
-            async removeFromFirestoreWishlist(tireId) {
-                try {
-                    const ref = doc(db, "Wishlist", this.currentUser.email);
-                    await setDoc(ref, { [tireId]: deleteField() }, { merge: true });
-                } catch (e) {
-                    console.error("Wishlist remove error:", e);
-                }
-            },
-
-            
             async loadFirestoreWishlist() {
-                try {
-                    const ref = doc(db, "Wishlist", this.currentUser.email);
-                    const snap = await getDoc(ref);
-                    if (snap.exists()) {
-                        const data = snap.data(); 
-                        // Map saved IDs back to full tire objects (need tires loaded first)
-                        const saved = [];
-                        for (const [tireId, tireSize] of Object.entries(data)) {
-                            const full = this.tires.find(t => t.id === tireId);
-                            if (full) {
-                                saved.push({ id: full.id, name: full.name, size: full.size, price: full.price });
-                            } else {
-                                // Tire might no longer be in stock, still show with what we have
-                                saved.push({ id: tireId, name: tireId, size: tireSize, price: '—' });
-                            }
-                        }
-                        this.wishlist = saved;
-                    }
-                } catch (e) {
-                    console.error("Wishlist load error:", e);
-                }
+                await wishlistMgr.loadFromFirestore(this.currentUser.email, this.tires);
+                this.wishlist = [...wishlistMgr.items];
             },
 
             
@@ -904,14 +863,9 @@ Customer request: ${this.searchQuery}`;
             addToCart(tire) {
                 if (!tire) return;
                 try {
-                    let cart = JSON.parse(localStorage.getItem('faiq_cart') || '[]');
-                    const existing = cart.find(i => i.id === tire.id);
-                    if (existing) {
-                        existing.qty++;
-                    } else {
-                        cart.push({ id: tire.id, name: tire.name, size: tire.size, description: tire.description, price: tire.price, qty: 1 });
-                    }
-                    localStorage.setItem('faiq_cart', JSON.stringify(cart));
+                    // Use Cart model (load fresh, add item, save back via Cart.save())
+                    const sessionCart = new Cart('faiq_cart').load();
+                    sessionCart.addItem(tire);
                     this.showToast('Added to cart! ✓  — <a href="Checkout.html" style="color:var(--twt-red);font-weight:700;">View Cart</a>');
                 } catch(e) {
                     console.error('Cart error:', e);
@@ -953,3 +907,4 @@ Customer request: ${this.searchQuery}`;
 </script>
 </body>
 </html>
+
