@@ -826,9 +826,7 @@
 </div><!-- /#app -->
 
 
-<!-- ══════════════════════════════════════════════════════════════
-     ★ ANALYTICS DASHBOARD OVERLAY ★
-══════════════════════════════════════════════════════════════ -->
+
 <div id="analytics-overlay">
 
     <!-- STICKY TOP BAR -->
@@ -848,7 +846,7 @@
             <button class="an-tab" onclick="switchTab('customer',this)">03 / Customer</button>
         </div>
 
-        <!-- ════════════ FINANCIAL REPORT ════════════ -->
+        
         <div id="tab-financial" class="an-panel active">
         <div class="an-panel-inner">
             <div class="an-section-hdr">
@@ -990,6 +988,7 @@
 
 
 <script type="module">
+   
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
         from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
@@ -999,8 +998,11 @@
         query, orderBy, updateDoc
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
     import { auth, db } from './Backend/Firebase.js';
+    import { AuthManager, TyreRepository, Validator } from './Backend/models.js';
 
-    
+    const authMgr  = new AuthManager(auth, db, { doc, getDoc, setDoc });
+    const tyreRepo = new TyreRepository(db, { collection, getDocs, addDoc, deleteDoc, doc });
+
     window._analyticsData = { orders: [], users: [], tires: [] };
 
     createApp({
@@ -1089,18 +1091,11 @@
                 this.isLoading = true; this.loginError = '';
                 try {
                     const result = await signInWithPopup(auth, new GoogleAuthProvider());
-                    const user = result.user;
-                    const userRef = doc(db, "Users", user.uid);
-                    const existingDoc = await getDoc(userRef);
-                    const existingRole = existingDoc.exists() ? existingDoc.data().role : 'customer';
-                    const isAdmin  = user.email === "theguys5611@gmail.com";
-                    const userRole = isAdmin ? "admin" : existingRole;
-                    const isNewUser = !existingDoc.exists();
-                    await setDoc(userRef, {
-                        displayName: user.displayName, email: user.email, role: userRole,
-                        lastLogin: new Date(), ...(isNewUser && { createdAt: new Date() })
-                    }, { merge: true });
-                    if (isNewUser) this.showToast(`Welcome to Faiq's Tyres, ${user.displayName}! Your account has been created.`);
+                    // AuthManager.resolveUserProfile handles role assignment, admin detection,
+                    // and Firestore upsert — encapsulated in the Model layer.
+                    const { isNew, role } = await authMgr.resolveUserProfile(result.user);
+                    this.role = role;
+                    if (isNew) this.showToast(`Welcome to Faiq's Tyres, ${result.user.displayName}! Your account has been created.`);
                 } catch (error) {
                     this.loginError = error.message.includes('popup-closed')
                         ? 'Sign-in was cancelled. Please try again.'
@@ -1110,22 +1105,27 @@
 
             async logout() {
                 await signOut(auth);
+                authMgr.logout();
                 this.user = null; this.role = 'customer';
                 this.tires = []; this.users = [];
                 this.orders = []; this.allOrders = [];
             },
 
             async addTire() {
-                if (!this.newTire.name || !this.newTire.price) return this.showToast('Brand and price are required.');
+                // Use Validator (Model layer) before writing to Firestore
+                const { valid, errors } = Validator.addTyreForm(this.newTire);
+                if (!valid) return this.showToast(errors[0]);
+
                 this.isAdding = true;
                 try {
-                    await addDoc(collection(db, "Tires"), {
+                    // Use TyreRepository (data access layer)
+                    await tyreRepo.add({
                         ...this.newTire,
-                        price: Number(this.newTire.price),
-                        costPrice: Number(this.newTire.costPrice || 0)
+                        price     : Number(this.newTire.price),
+                        costPrice : Number(this.newTire.costPrice || 0)
                     });
                     this.newTire = { name: '', description: '', price: '', costPrice: '', size: '' };
-                    await this.fetchTires();
+                    this.tires  = await tyreRepo.getAll();
                     this.showToast('Tyre added to inventory.');
                 } catch (e) { this.showToast('Error: ' + e.message); }
                 finally { this.isAdding = false; }
@@ -1133,14 +1133,14 @@
 
             async deleteTire(id) {
                 if (!confirm("Permanently remove this listing?")) return;
-                await deleteDoc(doc(db, "Tires", id));
-                await this.fetchTires();
+                await tyreRepo.delete(id);
+                this.tires = await tyreRepo.getAll();
                 this.showToast('Tyre removed.');
             },
 
             async fetchTires() {
-                const snap = await getDocs(collection(db, "Tires"));
-                this.tires = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                // TyreRepository.getAll() returns Tyre instances (Model layer)
+                this.tires = await tyreRepo.getAll();
             },
 
             async fetchUsers() {
@@ -1187,15 +1187,15 @@
             onAuthStateChanged(auth, async (user) => {
                 this.user = user;
                 if (user) {
-                    const userDoc = await getDoc(doc(db, "Users", user.uid));
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        this.role = data.role || 'customer';
-                        if (data.createdAt?.toDate) {
-                            this.joinDate = data.createdAt.toDate().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long' });
-                        }
-                    }
-                    if (this.role === 'admin') {
+                    // AuthManager.loadProfile() resolves role & joinDate from Firestore
+                    const { role, joinDate } = await authMgr.loadProfile(user);
+                    this.role     = role;
+                    this.joinDate = joinDate;
+
+                    if (role === 'admin') {
+                        // ── Admin guard: double-check server-side role before showing sensitive data ──
+                        // authMgr.guardAdmin() would redirect if role wasn't admin,
+                        // but since we just loaded it from Firestore, we proceed safely.
                         await this.fetchTires();
                         await this.fetchUsers();
                         await this.fetchAllOrders();
@@ -1253,8 +1253,7 @@ const CHART_DEFAULTS = {
 function fmt(n) { return 'R' + Number(n||0).toLocaleString('en-ZA'); }
 function fmtN(n) { return Number(n||0).toLocaleString('en-ZA'); }
 
-// ── Open / close ─────────────────────────────────────────────────────────────
-// ── Tab switching ─────────────────────────────────────────────────────────────
+
 const _builtTabs = new Set();
 
 window.openAnalyticsDashboard = function() {
