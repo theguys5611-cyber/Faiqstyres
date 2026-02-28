@@ -10,9 +10,7 @@
     <link rel="stylesheet" href="styles.css">
 
     <style>
-        /* ═══════════════════════════════════════
-           CHECKOUT LAYOUT
-        ═══════════════════════════════════════ */
+       
         .checkout-layout {
             max-width: 1300px;
             margin: 40px auto 80px;
@@ -26,9 +24,7 @@
             .checkout-layout { grid-template-columns: 1fr; }
         }
 
-        /* ═══════════════════════════════════════
-           STEP PROGRESS BAR
-        ═══════════════════════════════════════ */
+       
         .progress-bar {
             background: white;
             border-bottom: 1px solid var(--border);
@@ -1196,23 +1192,18 @@
         EMAILJS_TEMPLATE_ID !== 'YOUR_TEMPLATE_ID' &&
         EMAILJS_PUBLIC_KEY  !== 'YOUR_PUBLIC_KEY';
 
-    const PROMO_CODES = {
-        'FAIQ10'  : { label: '10% off',  type: 'percent', value: 10  },
-        'WELCOME' : { label: 'R100 off', type: 'fixed',   value: 100 },
-        'SA2025'  : { label: '5% off',   type: 'percent', value: 5   }
-    };
     const FITMENT_COST = 250;
     const VAT_RATE     = 0.15;
 
-    let cart        = [];
-    let fitment     = false;
-    let fitmentSlot = '';
-    let promoCode   = null;
+    // ── NOTE: Cart, Order, Validator are ES6 classes from models.js ──────────
+    // They are loaded in the module script below and exposed on window
+    // so this plain script can access them.
+
+    // ── State (managed via Cart model) ───────────────────────────────────────
+    let _cart       = null;   // Cart instance — set by the module script below
     let currentStep = 1;
     let maxStep     = 1;
-
-    // Set by the Firebase module once auth state resolves
-    let currentUser = null;
+    let currentUser = null;   // Set by Firebase module
 
     const TIME_SLOTS = [
         '08:00 – 09:00', '09:00 – 10:00', '10:00 – 11:00',
@@ -1222,11 +1213,17 @@
 
     /* ─── INIT ─── */
     function init() {
-        loadCart();
-        renderCart();
-        renderSummary();
-        renderSlots();
-        setActiveStep(1);
+        // Cart model is loaded by the module script; wait for it to be ready
+        const waitForCart = setInterval(() => {
+            if (window._cartModel) {
+                clearInterval(waitForCart);
+                _cart = window._cartModel;
+                renderCart();
+                renderSummary();
+                renderSlots();
+                setActiveStep(1);
+            }
+        }, 30);
 
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('fit-date').min = today;
@@ -1248,9 +1245,7 @@
     /* ─── AUTH CALLBACKS (called by Firebase module) ─── */
     function onUserSignedIn(user) {
         currentUser = user;
-        // Hide sign-in wall
         document.getElementById('signin-wall').classList.remove('show');
-        // Populate the account banner in step 2
         document.getElementById('review-name').textContent  = user.displayName || '';
         document.getElementById('review-email').textContent = user.email || '';
         const avatar = document.getElementById('review-avatar');
@@ -1262,31 +1257,17 @@
 
     function onUserSignedOut() {
         currentUser = null;
-        // Show sign-in wall whenever user is on step 2
         if (currentStep === 2) {
             document.getElementById('signin-wall').classList.add('show');
         }
     }
 
-    /* ─── CART PERSISTENCE ─── */
-    function loadCart() {
-        try {
-            const saved = localStorage.getItem('faiq_cart');
-            cart = saved ? JSON.parse(saved) : getDemoCart();
-        } catch(e) { cart = getDemoCart(); }
-    }
-    function saveCart() {
-        try { localStorage.setItem('faiq_cart', JSON.stringify(cart)); } catch(e) {}
-    }
-    function getDemoCart() {
-        return [{ id: 'demo1', name: 'MICHELIN', size: '205/55 R16', description: 'Primacy 4 — All-season touring', price: 1850, qty: 4 }];
-    }
-
-    /* ─── RENDER CART ─── */
+    /* ─── RENDER CART (uses Cart model) ─── */
     function renderCart() {
+        if (!_cart) return;
         const list  = document.getElementById('cart-items-list');
         const empty = document.getElementById('cart-empty-state');
-        if (cart.length === 0) {
+        if (_cart.isEmpty) {
             list.innerHTML = '';
             empty.style.display = 'block';
             document.getElementById('fitment-panel').style.display = 'none';
@@ -1294,7 +1275,7 @@
         }
         empty.style.display = 'none';
         document.getElementById('fitment-panel').style.display = 'block';
-        list.innerHTML = cart.map((item, idx) => `
+        list.innerHTML = _cart.items.map((item, idx) => `
             <div class="cart-item" id="cart-item-${idx}">
                 <div class="cart-item-icon">🛞</div>
                 <div class="cart-item-info">
@@ -1303,7 +1284,7 @@
                     <div class="cart-item-desc">${item.description || ''}</div>
                 </div>
                 <div class="cart-item-right">
-                    <div class="cart-item-price">R${(item.price * item.qty).toLocaleString()}</div>
+                    <div class="cart-item-price">R${(item.lineTotal).toLocaleString()}</div>
                     <div class="qty-stepper">
                         <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
                         <div class="qty-val">${item.qty}</div>
@@ -1314,76 +1295,62 @@
             </div>
         `).join('');
     }
+
     function changeQty(idx, delta) {
-        cart[idx].qty = Math.max(1, cart[idx].qty + delta);
-        saveCart(); renderCart(); renderSummary();
+        _cart.updateQty(idx, delta);
+        renderCart(); renderSummary();
     }
     function removeItem(idx) {
-        cart.splice(idx, 1);
-        saveCart(); renderCart(); renderSummary();
+        _cart.removeItem(idx);
+        renderCart(); renderSummary();
         showToast('Item removed from cart.');
     }
 
     /* ─── FITMENT ─── */
     function selectFitment(val) {
-        fitment = val;
+        _cart.fitment = val;
         document.getElementById('fitment-toggle-yes').classList.toggle('selected', val);
         document.getElementById('fitment-toggle-no').classList.toggle('selected', !val);
         document.getElementById('fitment-slots').classList.toggle('show', val);
-        if (!val) fitmentSlot = '';
+        if (!val) _cart.fitmentSlot = '';
         renderSummary();
     }
     function renderSlots() {
         const grid = document.getElementById('slot-grid');
         grid.innerHTML = TIME_SLOTS.map(slot => `
-            <button class="slot-btn ${fitmentSlot === slot ? 'active' : ''}"
+            <button class="slot-btn ${_cart && _cart.fitmentSlot === slot ? 'active' : ''}"
                     onclick="selectSlot('${slot}')">${slot}</button>
         `).join('');
     }
-    function selectSlot(slot) { fitmentSlot = slot; renderSlots(); }
-
-    /* ─── PROMO ─── */
-    function applyPromo() {
-        const code = document.getElementById('promo-input').value.trim().toUpperCase();
-        const msg  = document.getElementById('promo-msg');
-        if (!code) { msg.className = 'promo-msg err'; msg.textContent = 'Please enter a promo code.'; return; }
-        if (PROMO_CODES[code]) {
-            promoCode = { code, ...PROMO_CODES[code] };
-            msg.className = 'promo-msg ok';
-            msg.textContent = `✓ Code applied: ${promoCode.label}`;
-            renderSummary();
-        } else {
-            promoCode = null;
-            msg.className = 'promo-msg err';
-            msg.textContent = 'Invalid promo code. Please try again.';
-            renderSummary();
-        }
+    function selectSlot(slot) {
+        if (_cart) _cart.fitmentSlot = slot;
+        renderSlots();
     }
 
-    /* ─── TOTALS ─── */
+    /* ─── PROMO (uses Cart.applyPromo) ─── */
+    function applyPromo() {
+        const code = document.getElementById('promo-input').value.trim();
+        const msg  = document.getElementById('promo-msg');
+        const result = _cart.applyPromo(code);
+        msg.className = 'promo-msg ' + (result.ok ? 'ok' : 'err');
+        msg.textContent = result.message;
+        renderSummary();
+    }
+
+    /* ─── TOTALS (uses Cart.calcTotals) ─── */
     function calcTotals() {
-        const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-        const fitCost  = fitment ? FITMENT_COST : 0;
-        let   discount = 0;
-        if (promoCode) {
-            discount = promoCode.type === 'percent'
-                ? Math.round(subtotal * promoCode.value / 100)
-                : Math.min(promoCode.value, subtotal);
-        }
-        const beforeVat = subtotal + fitCost - discount;
-        const vat       = Math.round(beforeVat * VAT_RATE);
-        const total     = beforeVat + vat;
-        return { subtotal, fitCost, discount, vat, total };
+        return _cart ? _cart.calcTotals() : { subtotal:0, fitCost:0, discount:0, vat:0, total:0 };
     }
     function fmt(n) { return 'R' + Number(n).toLocaleString(); }
 
-    /* ─── RENDER SUMMARY PANEL ─── */
+    /* ─── RENDER SUMMARY ─── */
     function renderSummary() {
+        if (!_cart) return;
         const { subtotal, fitCost, discount, vat, total } = calcTotals();
-        document.getElementById('summary-lines').innerHTML = cart.map(item => `
+        document.getElementById('summary-lines').innerHTML = _cart.items.map(item => `
             <div class="summary-line">
                 <span class="summary-line-label">${item.name} × ${item.qty}</span>
-                <span class="summary-line-val">${fmt(item.price * item.qty)}</span>
+                <span class="summary-line-val">${fmt(item.lineTotal)}</span>
             </div>
         `).join('');
         document.getElementById('sum-subtotal').textContent = fmt(subtotal);
@@ -1399,7 +1366,7 @@
         }
     }
 
-    /* ─── STEP NAVIGATION (2 steps now) ─── */
+    /* ─── STEP NAVIGATION ─── */
     function setActiveStep(step) {
         currentStep = step;
         document.getElementById('step-1').style.display = step === 1 ? 'block' : 'none';
@@ -1414,22 +1381,20 @@
             else                 { tab.classList.add(i <= maxStep ? '' : 'locked'); bubble.textContent = i; }
         }
 
-        // PLACE ORDER button only on step 2
         document.getElementById('place-order-btn').style.display = step === 2 ? 'block' : 'none';
 
-        // Populate review order items whenever entering step 2
         if (step === 2) {
-            document.getElementById('review-items').innerHTML = cart.map(item => `
+            document.getElementById('review-items').innerHTML = _cart.items.map(item => `
                 <div class="summary-line" style="font-size:0.875rem; border-bottom:1px solid #f5f5f5; padding:8px 0;">
                     <span>${item.name} — ${item.size} × ${item.qty}</span>
-                    <span style="font-family:var(--font-mono); font-weight:700;">${fmt(item.price * item.qty)}</span>
+                    <span style="font-family:var(--font-mono); font-weight:700;">${fmt(item.lineTotal)}</span>
                 </div>
             `).join('');
             const fitmentBlock = document.getElementById('review-fitment-block');
-            if (fitment) {
+            if (_cart.fitment) {
                 fitmentBlock.style.display = 'block';
                 document.getElementById('review-fitment-slot').textContent =
-                    `${document.getElementById('fit-date').value} · ${fitmentSlot}`;
+                    `${document.getElementById('fit-date').value} · ${_cart.fitmentSlot}`;
             } else {
                 fitmentBlock.style.display = 'none';
             }
@@ -1444,51 +1409,55 @@
 
     /* ─── PROCEED FROM CART → REVIEW ─── */
     function proceedToReview() {
-        if (cart.length === 0) { showToast('Your cart is empty. Add a tyre first.'); return; }
-        if (fitment && !fitmentSlot) { showToast('Please select a fitment time slot.'); return; }
-        if (fitment && !document.getElementById('fit-date').value) { showToast('Please select a fitment date.'); return; }
-
-        // Gate: must be signed in
+        if (!_cart || _cart.isEmpty) { showToast('Your cart is empty. Add a tyre first.'); return; }
+        if (_cart.fitment && !_cart.fitmentSlot) { showToast('Please select a fitment time slot.'); return; }
+        if (_cart.fitment && !document.getElementById('fit-date').value) { showToast('Please select a fitment date.'); return; }
         if (!currentUser) {
             document.getElementById('signin-wall').classList.add('show');
             return;
         }
-
         maxStep = Math.max(maxStep, 2);
         setActiveStep(2);
     }
 
-    /* ─── OPEN CONFIRM MODAL ─── */
+    /* ─── OPEN CONFIRM MODAL (uses Validator model) ─── */
     function openConfirmModal() {
-        if (cart.length === 0) { showToast('Your cart is empty.'); return; }
-        if (!currentUser)      { document.getElementById('signin-wall').classList.add('show'); return; }
+        if (!_cart || _cart.isEmpty) { showToast('Your cart is empty.'); return; }
+        if (!currentUser) { document.getElementById('signin-wall').classList.add('show'); return; }
 
-        // Validate the extra fields
-        const phone   = document.getElementById('d-phone').value.trim();
-        const method  = document.getElementById('d-method').value;
-        const address = document.getElementById('d-address').value.trim();
-        const errEl   = document.getElementById('details-error');
+        const phone      = document.getElementById('d-phone').value.trim();
+        const method     = document.getElementById('d-method').value;
+        const address    = document.getElementById('d-address').value.trim();
+        const fitDate    = document.getElementById('fit-date').value;
+        const errEl      = document.getElementById('details-error');
         errEl.classList.remove('show');
 
-        if (!phone)  { showDetailsError('Please enter a contact number.'); return; }
-        if (!method) { showDetailsError('Please select a collection or delivery method.'); return; }
-        if (method === 'delivery' && !address) { showDetailsError('Please enter a delivery address.'); return; }
+        // ── Validator class (Model layer) handles all validation logic ────────
+        const { valid, errors } = window._Validator.checkoutForm({
+            phone,
+            deliveryMethod  : method,
+            deliveryAddress : address,
+            cart            : _cart.items,
+            fitment         : _cart.fitment,
+            fitmentSlot     : _cart.fitmentSlot,
+            fitmentDate     : fitDate,
+        });
+
+        if (!valid) { showDetailsError(errors[0]); return; }
 
         const { subtotal, fitCost, discount, vat, total } = calcTotals();
-        const vehicle    = document.getElementById('d-vehicle').value.trim();
-        const fitDate    = document.getElementById('fit-date').value;
-        const methodEl   = document.getElementById('d-method');
+        const vehicle     = document.getElementById('d-vehicle').value.trim();
+        const methodEl    = document.getElementById('d-method');
         const methodLabel = methodEl.options[methodEl.selectedIndex]?.text || methodEl.value;
 
-        // Populate modal items
-        document.getElementById('cm-items').innerHTML = cart.map(i => `
+        document.getElementById('cm-items').innerHTML = _cart.items.map(i => `
             <div class="confirm-summary-row">
                 <span class="confirm-summary-label">${i.name} ${i.size} × ${i.qty}</span>
-                <span class="confirm-summary-val">${fmt(i.price * i.qty)}</span>
+                <span class="confirm-summary-val">${fmt(i.lineTotal)}</span>
             </div>
         `).join('') + (discount > 0 ? `
             <div class="confirm-summary-row">
-                <span class="confirm-summary-label">Promo (${promoCode.code})</span>
+                <span class="confirm-summary-label">Promo (${_cart.promoCode.code})</span>
                 <span class="confirm-summary-val" style="color:#15803d;">−${fmt(discount)}</span>
             </div>` : '') + (fitCost > 0 ? `
             <div class="confirm-summary-row">
@@ -1501,20 +1470,18 @@
             </div>`;
 
         document.getElementById('cm-total').textContent = fmt(total);
-
         document.getElementById('cm-customer').innerHTML =
             `<strong>${currentUser.displayName || ''}</strong><br>
              ${currentUser.email}<br>${phone}` +
             (vehicle ? `<br>${vehicle}` : '');
-
         document.getElementById('cm-method').innerHTML =
             `<strong>${methodLabel}</strong><br>` +
             (method === 'delivery' ? address : '8 Campground Road, Rondebosch, Cape Town');
 
-        if (fitment && fitDate && fitmentSlot) {
+        if (_cart.fitment && fitDate && _cart.fitmentSlot) {
             document.getElementById('cm-fitment-wrap').style.display = 'block';
             document.getElementById('cm-fitment').innerHTML =
-                `<strong>Rondebosch Fitment Centre</strong><br>${fitDate} · ${fitmentSlot}`;
+                `<strong>Rondebosch Fitment Centre</strong><br>${fitDate} · ${_cart.fitmentSlot}`;
         } else {
             document.getElementById('cm-fitment-wrap').style.display = 'none';
         }
@@ -1523,7 +1490,6 @@
         document.getElementById('cm-placing').classList.remove('show');
         document.getElementById('cm-confirm-btn').disabled = false;
         document.getElementById('cm-confirm-btn').textContent = 'CONFIRM & PLACE ORDER';
-
         document.getElementById('confirm-overlay').classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -1540,7 +1506,7 @@
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    /* ─── SUBMIT ORDER ─── */
+    /* ─── SUBMIT ORDER (uses Order model) ─── */
     async function submitOrder() {
         if (!currentUser) { closeConfirmModal(); document.getElementById('signin-wall').classList.add('show'); return; }
 
@@ -1550,73 +1516,48 @@
         document.getElementById('cm-error').classList.remove('show');
         document.getElementById('cm-placing').classList.add('show');
 
-        const { subtotal, fitCost, discount, vat, total } = calcTotals();
-        const orderRef   = 'FT-' + Date.now().toString().slice(-6);
-        const phone      = document.getElementById('d-phone').value.trim();
-        const vehicle    = document.getElementById('d-vehicle').value.trim();
-        const methodEl   = document.getElementById('d-method');
-        const address    = document.getElementById('d-address').value.trim();
-        const notes      = document.getElementById('d-notes').value.trim();
-        const fitDate    = document.getElementById('fit-date').value;
+        const phone       = document.getElementById('d-phone').value.trim();
+        const vehicle     = document.getElementById('d-vehicle').value.trim();
+        const methodEl    = document.getElementById('d-method');
+        const address     = document.getElementById('d-address').value.trim();
+        const notes       = document.getElementById('d-notes').value.trim();
+        const fitDate     = document.getElementById('fit-date').value;
         const methodLabel = methodEl.options[methodEl.selectedIndex]?.text || methodEl.value;
 
-        const orderPayload = {
-            ref: orderRef,
-            customer: {
-                name    : currentUser.displayName || '',
-                email   : currentUser.email,
-                uid     : currentUser.uid,
-                phone,
-                vehicle : vehicle || null,
-                notes   : notes   || null,
-            },
-            items: cart.map(i => ({
-                id        : i.id,
-                name      : i.name,
-                size      : i.size,
-                qty       : i.qty,
-                unitPrice : i.price,
-                lineTotal : i.price * i.qty,
-            })),
-            fitment: {
-                requested : fitment,
-                date      : fitment ? fitDate      : null,
-                slot      : fitment ? fitmentSlot  : null,
-                cost      : fitCost,
-            },
-            delivery: {
-                method  : methodEl.value,
-                label   : methodLabel,
-                address : methodEl.value === 'delivery' ? address : '8 Campground Road, Rondebosch, Cape Town',
-            },
-            totals    : { subtotal, fitment: fitCost, discount, vat, total },
-            promoCode : promoCode ? promoCode.code : null,
-        };
+        // ── Order class (Model layer) builds the complete payload ────────────
+        const order = new window._Order({
+            cart            : _cart,
+            user            : currentUser,
+            phone, vehicle, notes,
+            deliveryMethod  : methodEl.value,
+            deliveryAddress : address,
+            deliveryLabel   : methodLabel,
+            fitmentDate     : fitDate,
+        });
 
         let firestoreOk = false;
-
         try {
             if (typeof window.saveOrderToFirestore === 'function') {
-                await window.saveOrderToFirestore(orderPayload);
+                await window.saveOrderToFirestore(order);
                 firestoreOk = true;
             }
         } catch (fsErr) {
             console.error('Firestore save error:', fsErr);
         }
 
-        // Optional EmailJS
         if (EMAILJS_CONFIGURED) {
             try {
-                const itemsList = cart.map(i => `${i.name} (${i.size}) × ${i.qty} = ${fmt(i.price * i.qty)}`).join('\n');
+                const { subtotal, fitCost, discount, vat, total } = _cart.calcTotals();
+                const itemsList = _cart.items.map(i => `${i.name} (${i.size}) × ${i.qty} = ${fmt(i.lineTotal)}`).join('\n');
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                    order_ref      : orderRef,
+                    order_ref      : order.ref,
                     customer_name  : currentUser.displayName || '',
                     customer_email : currentUser.email,
                     customer_phone : phone,
                     vehicle        : vehicle || 'Not provided',
                     items_list     : itemsList,
-                    fitment        : fitment ? "Yes — Fit & Balance at Faiq's Tyres" : 'No',
-                    fitment_slot   : fitment ? `${fitDate} · ${fitmentSlot}` : 'N/A',
+                    fitment        : _cart.fitment ? "Yes — Fit & Balance at Faiq's Tyres" : 'No',
+                    fitment_slot   : _cart.fitment ? `${fitDate} · ${_cart.fitmentSlot}` : 'N/A',
                     method         : methodLabel,
                     address        : methodEl.value === 'delivery' ? address : 'Rondebosch Store',
                     subtotal       : fmt(subtotal),
@@ -1625,19 +1566,19 @@
                     vat            : fmt(vat),
                     total          : fmt(total),
                     notes          : notes || 'None',
-                    promo          : promoCode ? promoCode.code : 'None'
+                    promo          : _cart.promoCode ? _cart.promoCode.code : 'None'
                 }, EMAILJS_PUBLIC_KEY);
             } catch (ejErr) { console.error('EmailJS error:', ejErr); }
         }
 
         if (firestoreOk || !EMAILJS_CONFIGURED) {
             closeConfirmModal();
-            cart = []; saveCart();
+            _cart.clear();
             document.getElementById('checkout-main').style.display = 'none';
             document.querySelector('.progress-bar').style.display  = 'none';
             document.querySelector('.breadcrumbs').style.display   = 'none';
             document.getElementById('order-success').classList.add('show');
-            document.getElementById('success-ref').textContent            = 'REF: ' + orderRef;
+            document.getElementById('success-ref').textContent            = 'REF: ' + order.ref;
             document.getElementById('success-customer-name').textContent  = currentUser.displayName?.split(' ')[0] || '';
             document.getElementById('success-customer-email').textContent = currentUser.email;
         } else {
@@ -1662,10 +1603,7 @@
     document.addEventListener('DOMContentLoaded', init);
 </script>
 
-<!-- ══════════════════════════════════════════════════════
-     FIREBASE AUTH + FIRESTORE MODULE
-     Handles: Google sign-in, auth state, order saving
-══════════════════════════════════════════════════════ -->
+
 <script type="module">
     import { db } from './Backend/Firebase.js';
     import {
@@ -1675,11 +1613,20 @@
     import {
         doc, setDoc, collection, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    import { Cart, Order, Validator } from './Backend/models.js';
+
+    
+    window._Order     = Order;
+    window._Validator = Validator;
+
+    
+    const cart = new Cart('faiq_cart').load();
+    window._cartModel = cart;
 
     const auth     = getAuth();
     const provider = new GoogleAuthProvider();
 
-    // ── Auth state ────────────────────────────────────────
+    
     onAuthStateChanged(auth, (user) => {
         if (user) {
             window.onUserSignedIn(user);
@@ -1688,15 +1635,12 @@
         }
     });
 
-    // ── Google sign-in button ────────────────────────────
+   
     document.getElementById('btn-google-signin').addEventListener('click', async () => {
         try {
             await signInWithPopup(auth, provider);
-            // onAuthStateChanged fires automatically → onUserSignedIn called
-            // Then proceed to review step
             document.getElementById('signin-wall').classList.remove('show');
             if (typeof window.proceedToReview === 'function') {
-                // Re-attempt the navigation now that user is signed in
                 window._proceedAfterSignIn();
             }
         } catch (err) {
@@ -1707,13 +1651,10 @@
         }
     });
 
-    // Called by the sign-in flow after successful auth
     window._proceedAfterSignIn = function() {
         const maxS = Math.max(window._maxStep || 1, 2);
         window._maxStep = maxS;
-        // Directly set the step now the user is signed in
         if (typeof setActiveStep === 'function') {
-            // setActiveStep is in the plain script scope — call via the global
             document.getElementById('step-1').style.display = 'none';
             document.getElementById('step-2').style.display = 'block';
             document.getElementById('step-tab-1').classList.remove('active');
@@ -1727,30 +1668,21 @@
         }
     };
 
-    // ── Save order to Firestore ───────────────────────────
-    window.saveOrderToFirestore = async function(orderData) {
+   
+    window.saveOrderToFirestore = async function(order) {
         const user  = auth.currentUser;
-        const email = user ? user.email : orderData.customer.email;
+        const email = user ? user.email : order.customer.email;
 
         const orderRef = doc(
             collection(db, 'OrderHistory', email, 'orders'),
-            orderData.ref
+            order.ref
         );
 
-        await setDoc(orderRef, {
-            ref       : orderData.ref,
-            status    : 'pending',
-            placedAt  : serverTimestamp(),
-            customer  : orderData.customer,
-            items     : orderData.items,
-            fitment   : orderData.fitment,
-            delivery  : orderData.delivery,
-            totals    : orderData.totals,
-            promoCode : orderData.promoCode || null,
-        });
-
-        console.log(`[Firestore] Order ${orderData.ref} saved under ${email}`);
+        
+        await setDoc(orderRef, order.toFirestore(serverTimestamp));
+        console.log(`[Firestore] Order ${order.ref} saved under ${email}`);
     };
+    
 </script>
 
 </body>
